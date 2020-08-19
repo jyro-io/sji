@@ -1,7 +1,7 @@
 name = "sji"
 uuid = "75ad0310-f313-421a-acc3-e43e28b97d53"
 authors = ["rorylinehan@protonmail.com <rorylinehan@protonmail.com> and contributors"]
-version = "0.1.1"
+version = "0.1.2"
 
 [deps]
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"

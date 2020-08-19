@@ -13,7 +13,7 @@ can hit the ground running.
 #### Stable
 
 ```bash
-pkg> add https://github.com/jyro-io/sji/releases/tag/0.1.1
+pkg> add https://github.com/jyro-io/sji/releases/tag/0.1.2
 ```
 
 #### Latest
