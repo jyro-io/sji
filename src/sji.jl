@@ -86,7 +86,6 @@ function get_raw_data(c, name, key, time_start, time_end)
         JSON.json(params),
         require_ssl_verification = c.verify
     )
-    println(r.body)
     response = JSON.parse(String(r.body))
     if r.status == 200
         return true, response

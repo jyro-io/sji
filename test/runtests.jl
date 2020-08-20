@@ -19,7 +19,6 @@ using JSON
         "test_key"=>"integration",
         "timestamp"=>Dates.format(now(), timestamp_format)
     )]
-    println(record)
     status, response = sji.push_raw_data(
         socrates,
         "test",
