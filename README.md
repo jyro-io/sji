@@ -10,6 +10,8 @@ can hit the ground running.
 
 ### Install
 
+This package supports Julia 1.5.0 
+
 #### Stable
 
 ```bash
