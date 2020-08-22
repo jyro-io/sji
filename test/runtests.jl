@@ -8,7 +8,7 @@ using JSON
         protocol="http",
         host="localhost",
         username="test",
-        password="ElC11bbYbuMF",
+        password="iP6mp8PUJC70ioi3M9lX7YxP",
         verify=false
     )
 
@@ -38,5 +38,15 @@ using JSON
     )
     if status != true
         error("failed to get raw data: "*response)
+    end
+
+    status, response = sji.get_definition(
+        socrates,
+        "archimedes",
+        "datasource",
+        "test"
+    )
+    if status != true
+        error("failed to get definition: "*response)
     end
 end

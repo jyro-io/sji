@@ -8,7 +8,7 @@ using Dates
 @with_kw struct Socrates
     #=
     Construct an authenticated Socrates client
-    **kwargs:
+    keyword arguments:
         log_level <int> log output threshold level
         protocol <string> HTTP/HTTPS
         host <string> Socrates host
@@ -50,13 +50,20 @@ using Dates
 end
 
 function push_raw_data(c, name, records)
+    #=
+    Push raw data to Socrates
+
+    positional arguments:
+        c <Socrates> client type
+        name <String> datasource name
+        records <Array(Dict())>
+    =#
     url = c.protocol*"://"*c.host*"/archimedes/datasource"
     params = JSON.json(Dict(
         "operation"=>"push_raw_data",
         "name"=>name,
         "records"=>records
     ))
-    println(params)
     r = HTTP.post(
         url,
         c.headers,
@@ -72,6 +79,16 @@ function push_raw_data(c, name, records)
 end
 
 function get_raw_data(c, name, key, time_start, time_end)
+    #=
+    Get raw data from Socrates
+
+    positional arguments:
+        c <Socrates> client type
+        name <String> datasource name
+        time_start <String> time series start formatted as "yyyy-mm-dd HH:MM:SS.s"
+        time_end <String> time series end formatted as "yyyy-mm-dd HH:MM:SS.s"
+    =#
+
     url = c.protocol*"://"*c.host*"/archimedes/datasource"
     params = Dict(
         "operation"=>"get_raw_data",
@@ -79,6 +96,36 @@ function get_raw_data(c, name, key, time_start, time_end)
         "key"=>key,
         "start"=>time_start,
         "end"=>time_end
+    )
+    r = HTTP.post(
+        url,
+        c.headers,
+        JSON.json(params),
+        require_ssl_verification = c.verify
+    )
+    response = JSON.parse(String(r.body))
+    if r.status == 200
+        return true, response
+    else
+        return r.status, response
+    end
+end
+
+function get_definition(c, api, api_module, name)
+    #=
+    Get a JSON definition record from a specified api.module endpoint
+
+    positional arguments:
+        c <Socrates> client type
+        api <String> [archimedes,socrates]
+        api_module <String> endpoint to request
+        name <String> definition name
+    =#
+
+    url = c.protocol*"://"*c.host*"/"*api*"/"*api_module*""
+    params = Dict(
+        "operation"=>"get",
+        "name"=>name
     )
     r = HTTP.post(
         url,
