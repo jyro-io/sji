@@ -15,10 +15,10 @@ This package supports Julia 1.5.0
 #### Stable
 
 ```bash
-pkg> add https://github.com/jyro-io/sji/releases/tag/0.1.6
+pkg> add https://github.com/jyro-io/sji/#0.1.6
 ```
 
-#### Latest
+#### Dev
 
 ```bash
 pkg> add https://github.com/jyro-io/sji

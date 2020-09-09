@@ -122,7 +122,7 @@ function get_definition(c, api, api_module, name)
         name <String> definition name
     =#
 
-    url = c.protocol*"://"*c.host*"/"*api*"/"*api_module*""
+    url = c.protocol*"://"*c.host*"/"*api*"/"*api_module
     params = Dict(
         "operation"=>"get",
         "name"=>name
