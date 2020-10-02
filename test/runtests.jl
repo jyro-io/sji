@@ -49,4 +49,9 @@ using JSON
     if status != true
         error("failed to get definition: "*response)
     end
+
+    status, response = sji.get_iteration_set(socrates, "test")
+    if status != true
+        error("failed to get iteration set: "*response)
+    end
 end

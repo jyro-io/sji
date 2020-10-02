@@ -141,4 +141,33 @@ function get_definition(c, api, api_module, name)
     end
 end
 
+function get_iteration_set(c, name)
+    #=
+    Get defined set of keys from configured datasource to parallelize processing
+
+    positional arguments:
+        c <Socrates> client type
+        api <String> [archimedes]
+        name <String> definition name
+    =#
+
+    url = c.protocol*"://"*c.host*"/archimedes/scraper"
+    params = Dict(
+        "operation"=>"get_iteration_set",
+        "name"=>name
+    )
+    r = HTTP.post(
+        url,
+        c.headers,
+        JSON.json(params),
+        require_ssl_verification = c.verify
+    )
+    response = JSON.parse(String(r.body))
+    if r.status == 200
+        return true, response
+    else
+        return r.status, response
+    end
+end
+
 end # module
