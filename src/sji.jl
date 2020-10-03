@@ -161,7 +161,7 @@ function get_iteration_set(c, name)
         JSON.json(params),
         require_ssl_verification = c.verify
     )
-    response = JSON.parse(String(r.body))
+    response = JSON.parse(String(r.body))::Dict
     if r.status == 200
         return true, JSON.parse(response["data"])::Array
     else
