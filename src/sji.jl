@@ -27,7 +27,7 @@ using Dates
 
     function Socrates(log_level, protocol, host, username, password, verify, headers)
         url = protocol*"://"*host*"/auth"
-        params = Dict(
+        params = Dict{String,String}(
             "username"=>username,
             "password"=>password
         )
@@ -90,7 +90,7 @@ function get_raw_data(c, name, key, time_start, time_end)
     =#
 
     url = c.protocol*"://"*c.host*"/archimedes/datasource"
-    params = Dict(
+    params = Dict{String,String}(
         "operation"=>"get_raw_data",
         "name"=>name,
         "key"=>key,
@@ -123,7 +123,7 @@ function get_definition(c, api, api_module, name)
     =#
 
     url = c.protocol*"://"*c.host*"/"*api*"/"*api_module
-    params = Dict(
+    params = Dict{String,String}(
         "operation"=>"get",
         "name"=>name
     )
@@ -152,7 +152,7 @@ function get_iteration_set(c, name)
     =#
 
     url = c.protocol*"://"*c.host*"/archimedes/scraper"
-    params = Dict(
+    params = Dict{String,String}(
         "operation"=>"get_iteration_set",
         "name"=>name
     )
@@ -162,9 +162,9 @@ function get_iteration_set(c, name)
         JSON.json(params),
         require_ssl_verification = c.verify
     )
-    response = Array{String}(JSON.parse(String(r.body)))
+    response = JSON.parse(String(r.body))
     if r.status == 200
-        return true, response
+        return true, Array{String}(JSON.parse(response["data"]))
     else
         return r.status, response
     end

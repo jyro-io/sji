@@ -28,6 +28,7 @@ using JSON
         error("failed to push raw data: "*response)
     end
     push_after = Dates.now()
+    println(response)
 
     status, response = sji.get_raw_data(
         socrates,
@@ -39,6 +40,7 @@ using JSON
     if status != true
         error("failed to get raw data: "*response)
     end
+    println(response)
 
     status, response = sji.get_definition(
         socrates,
@@ -49,6 +51,7 @@ using JSON
     if status != true
         error("failed to get definition: "*response)
     end
+    println(response)
 
     status, response = sji.get_iteration_set(socrates, "test")
     if status != true
