@@ -15,7 +15,7 @@ This package supports Julia 1.5.2
 #### Stable
 
 ```bash
-pkg> add https://github.com/jyro-io/sji/#0.2.2
+pkg> add https://github.com/jyro-io/sji/#0.3.0
 ```
 
 #### Dev

@@ -70,7 +70,7 @@ function push_raw_data(c, name, records)
         params,
         require_ssl_verification = c.verify
     )
-    response = JSON.parse(String(r.body))
+    response = Dict{}(JSON.parse(String(r.body)))
     if r.status == 200
         return true, response
     else
@@ -103,7 +103,7 @@ function get_raw_data(c, name, key, time_start, time_end)
         JSON.json(params),
         require_ssl_verification = c.verify
     )
-    response = JSON.parse(String(r.body))
+    response = Dict{}(JSON.parse(String(r.body)))
     if r.status == 200
         return true, response
     else
@@ -133,7 +133,7 @@ function get_definition(c, api, api_module, name)
         JSON.json(params),
         require_ssl_verification = c.verify
     )
-    response = JSON.parse(String(r.body))
+    response = Dict{}(JSON.parse(String(r.body)))
     if r.status == 200
         return true, response
     else
@@ -162,7 +162,7 @@ function get_iteration_set(c, name)
         JSON.json(params),
         require_ssl_verification = c.verify
     )
-    response = JSON.parse(String(r.body))
+    response = Array{String}(JSON.parse(String(r.body)))
     if r.status == 200
         return true, response
     else
