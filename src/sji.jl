@@ -50,7 +50,7 @@ using Dates
     end
 end
 
-function push_raw_data(c, name, records)
+function push_raw_data(c::Socrates, name::String, records::Array)
     #=
     Push raw data to Socrates
 
@@ -79,15 +79,16 @@ function push_raw_data(c, name, records)
     end
 end
 
-function get_raw_data(c, name, key, time_start, time_end)
+function get_raw_data(c::Socrates, name::String, key::String, time_start::String, time_end::String)
     #=
     Get raw data from Socrates
 
     positional arguments:
         c <Socrates> client type
         name <String> datasource name
-        time_start <String> time series start formatted as "yyyy-mm-dd HH:MM:SS.s"
-        time_end <String> time series end formatted as "yyyy-mm-dd HH:MM:SS.s"
+        key <String> iter_field key
+        time_start <String> time series start
+        time_end <String> time series end
     =#
 
     url = c.protocol*"://"*c.host*"/archimedes/datasource"
@@ -112,7 +113,7 @@ function get_raw_data(c, name, key, time_start, time_end)
     end
 end
 
-function get_definition(c, api, api_module, name)
+function get_definition(c::Socrates, api::String, api_module::String, name::String)
     #=
     Get a JSON definition record from a specified api.module endpoint
 
@@ -142,7 +143,7 @@ function get_definition(c, api, api_module, name)
     end
 end
 
-function get_iteration_set(c, name)
+function get_iteration_set(c::Socrates, name::String)
     #=
     Get defined set of keys from configured datasource to parallelize processing
 
