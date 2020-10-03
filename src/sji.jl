@@ -1,3 +1,4 @@
+__precompile__(true)
 module sji
 
 using Parameters
