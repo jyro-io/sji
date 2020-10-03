@@ -170,4 +170,6 @@ function get_iteration_set(c, name)
     end
 end
 
+export Socrates
+
 end # module
