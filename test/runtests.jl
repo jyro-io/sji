@@ -53,7 +53,10 @@ using JSON
     end
     println(sr.response)
 
-    sr = sji.get_iteration_set(socrates, "test")
+    sr = sji.get_iteration_set(
+        socrates,
+        "test"
+    )
     if sr.status != true
         error("failed to get iteration set: "*sr.response)
     end

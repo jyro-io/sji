@@ -52,7 +52,7 @@ end
 
 struct SocratesResponse
     status::Bool
-    response::Dict
+    response
 end
 
 function push_raw_data(c::Socrates, name::String, records::Array)::SocratesResponse
@@ -170,7 +170,7 @@ function get_iteration_set(c::Socrates, name::String)::SocratesResponse
     )
     response = JSON.parse(String(r.body))
     if r.status == 200
-        return SocratesResponse(true, response::Dict)
+        return SocratesResponse(true, JSON.parse(response["data"])::Array)
     else
         return SocratesResponse(false, response::Dict)
     end
