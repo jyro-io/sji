@@ -50,7 +50,12 @@ using Dates
     end
 end
 
-function push_raw_data(c::Socrates, name::String, records::Array)
+struct SocratesResponse
+    status::Bool
+    response::Dict
+end
+
+function push_raw_data(c::Socrates, name::String, records::Array)::SocratesResponse
     #=
     Push raw data to Socrates
 
@@ -71,15 +76,15 @@ function push_raw_data(c::Socrates, name::String, records::Array)
         params,
         require_ssl_verification = c.verify
     )
-    response = JSON.parse(String(r.body))::Dict
+    response = JSON.parse(String(r.body))
     if r.status == 200
-        return true, response
+        return SocratesResponse(true, response::Dict)
     else
-        return r.status, response
+        return SocratesResponse(false, response::Dict)
     end
 end
 
-function get_raw_data(c::Socrates, name::String, key::String, time_start::String, time_end::String)
+function get_raw_data(c::Socrates, name::String, key::String, time_start::String, time_end::String)::SocratesResponse
     #=
     Get raw data from Socrates
 
@@ -105,15 +110,15 @@ function get_raw_data(c::Socrates, name::String, key::String, time_start::String
         JSON.json(params),
         require_ssl_verification = c.verify
     )
-    response = JSON.parse(String(r.body))::Dict
+    response = JSON.parse(String(r.body))
     if r.status == 200
-        return true, response
+        return SocratesResponse(true, response::Dict)
     else
-        return r.status, response
+        return SocratesResponse(false, response::Dict)
     end
 end
 
-function get_definition(c::Socrates, api::String, api_module::String, name::String)
+function get_definition(c::Socrates, api::String, api_module::String, name::String)::SocratesResponse
     #=
     Get a JSON definition record from a specified api.module endpoint
 
@@ -135,15 +140,15 @@ function get_definition(c::Socrates, api::String, api_module::String, name::Stri
         JSON.json(params),
         require_ssl_verification = c.verify
     )
-    response = JSON.parse(String(r.body))::Dict
+    response = JSON.parse(String(r.body))
     if r.status == 200
-        return true, response
+        return SocratesResponse(true, response::Dict)
     else
-        return r.status, response
+        return SocratesResponse(false, response::Dict)
     end
 end
 
-function get_iteration_set(c::Socrates, name::String)
+function get_iteration_set(c::Socrates, name::String)::SocratesResponse
     #=
     Get defined set of keys from configured datasource to parallelize processing
 
@@ -163,14 +168,14 @@ function get_iteration_set(c::Socrates, name::String)
         JSON.json(params),
         require_ssl_verification = c.verify
     )
-    response = JSON.parse(String(r.body))::Dict
+    response = JSON.parse(String(r.body))
     if r.status == 200
-        return true, JSON.parse(response["data"])::Array
+        return SocratesResponse(true, response::Dict)
     else
-        return r.status, response
+        return SocratesResponse(false, response::Dict)
     end
 end
 
-export Socrates, get_iteration_set, push_raw_data, get_raw_data, get_definition, get_iteration_set
+export Socrates, SocratesResponse, get_iteration_set, push_raw_data, get_raw_data, get_definition, get_iteration_set
 
 end # module

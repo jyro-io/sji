@@ -19,43 +19,43 @@ using JSON
         "test_key"=>"integration",
         "timestamp"=>Dates.format(now(), timestamp_format)
     )]
-    status, response = sji.push_raw_data(
+    sr = sji.push_raw_data(
         socrates,
         "test",
         record
     )
-    if status != true
-        error("failed to push raw data: "*response)
+    if sr.status != true
+        error("failed to push raw data: "*sr.response)
     end
     push_after = Dates.now()
-    println(response)
+    println(sr.response)
 
-    status, response = sji.get_raw_data(
+    sr = sji.get_raw_data(
         socrates,
         "test",
         "integration",
         Dates.format(push_before, timestamp_format),
         Dates.format(push_after, timestamp_format)
     )
-    if status != true
-        error("failed to get raw data: "*response)
+    if sr.status != true
+        error("failed to get raw data: "*sr.response)
     end
-    println(response)
+    println(sr.response)
 
-    status, response = sji.get_definition(
+    sr = sji.get_definition(
         socrates,
         "archimedes",
         "datasource",
         "test"
     )
-    if status != true
-        error("failed to get definition: "*response)
+    if sr.status != true
+        error("failed to get definition: "*sr.response)
     end
-    println(response)
+    println(sr.response)
 
-    status, response = sji.get_iteration_set(socrates, "test")
-    if status != true
-        error("failed to get iteration set: "*response)
+    sr = sji.get_iteration_set(socrates, "test")
+    if sr.status != true
+        error("failed to get iteration set: "*sr.response)
     end
-    println(response)
+    println(sr.response)
 end
