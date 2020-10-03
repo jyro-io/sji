@@ -39,7 +39,7 @@ using Dates
             readtimeout = 5,
             retries = 1
         )
-        response = JSON.parse(String(r.body))
+        response = JSON.parse(String(r.body))::Dict
         if r.status == 200
             push!(headers, ("Authorization"=>"Token "*response["token"]))
         else
@@ -70,7 +70,7 @@ function push_raw_data(c, name, records)
         params,
         require_ssl_verification = c.verify
     )
-    response = Dict{}(JSON.parse(String(r.body)))
+    response = JSON.parse(String(r.body))::Dict
     if r.status == 200
         return true, response
     else
@@ -103,7 +103,7 @@ function get_raw_data(c, name, key, time_start, time_end)
         JSON.json(params),
         require_ssl_verification = c.verify
     )
-    response = Dict{}(JSON.parse(String(r.body)))
+    response = JSON.parse(String(r.body))::Dict
     if r.status == 200
         return true, response
     else
@@ -133,7 +133,7 @@ function get_definition(c, api, api_module, name)
         JSON.json(params),
         require_ssl_verification = c.verify
     )
-    response = Dict{}(JSON.parse(String(r.body)))
+    response = JSON.parse(String(r.body))::Dict
     if r.status == 200
         return true, response
     else
@@ -163,7 +163,7 @@ function get_iteration_set(c, name)
     )
     response = JSON.parse(String(r.body))
     if r.status == 200
-        return true, Array{String}(JSON.parse(response["data"]))
+        return true, JSON.parse(response["data"])::Array
     else
         return r.status, response
     end
