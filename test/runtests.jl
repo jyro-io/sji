@@ -57,4 +57,6 @@ using JSON
     if status != true
         error("failed to get iteration set: "*response)
     end
+    print(typeof(response))
+    println(response)
 end

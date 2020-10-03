@@ -147,7 +147,6 @@ function get_iteration_set(c, name)
 
     positional arguments:
         c <Socrates> client type
-        api <String> [archimedes]
         name <String> definition name
     =#
 
@@ -169,7 +168,5 @@ function get_iteration_set(c, name)
         return r.status, response
     end
 end
-
-export Socrates
 
 end # module
