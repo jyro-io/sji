@@ -169,4 +169,6 @@ function get_iteration_set(c, name)
     end
 end
 
+export Socrates, get_iteration_set, push_raw_data, get_raw_data, get_definition, get_iteration_set
+
 end # module
