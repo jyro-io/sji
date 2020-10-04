@@ -176,6 +176,40 @@ function get_iteration_set(c::Socrates, name::String)::SocratesResponse
     end
 end
 
-export Socrates, SocratesResponse, get_iteration_set, push_raw_data, get_raw_data, get_definition, get_iteration_set
+function get_metric_fields(c::Socrates, name::String)::SocratesResponse
+    #=
+    Get fields for defined metric
+
+    positional arguments:
+        c <Socrates> client type
+        name <String> metric name
+    =#
+
+    url = c.protocol*"://"*c.host*"/archimedes/metric"
+    params = Dict{String,String}(
+        "operation"=>"get_fields",
+        "name"=>name
+    )
+    r = HTTP.post(
+        url,
+        c.headers,
+        JSON.json(params),
+        require_ssl_verification = c.verify
+    )
+    response = JSON.parse(String(r.body))
+    if r.status == 200
+        return SocratesResponse(true, JSON.parse(response)::Array)
+    else
+        return SocratesResponse(false, response::Dict)
+    end
+end
+
+export Socrates
+export SocratesResponse
+export push_raw_data
+export get_raw_data
+export get_definition
+export get_iteration_set
+export get_metric_fields
 
 end # module

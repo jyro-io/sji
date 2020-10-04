@@ -61,4 +61,13 @@ using JSON
         error("failed to get iteration set: "*sr.response)
     end
     println(sr.response)
+
+    sr = sji.get_metric_fields(
+        socrates,
+        "test"
+    )
+    if sr.status != true
+        error("failed to get iteration set: "*sr.response)
+    end
+    println(sr.response)
 end
