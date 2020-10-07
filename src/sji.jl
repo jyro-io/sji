@@ -204,6 +204,30 @@ function get_metric_fields(c::Socrates, name::String)::SocratesResponse
     end
 end
 
+function push_to_scrapeindex(c::Socrates, record::Dict)::SocratesResponse
+    #=
+    Get fields for defined metric
+
+    positional arguments:
+        c <Socrates> client type
+        name <String> metric name
+    =#
+
+    url = c.protocol*"://"*c.host*"/archimedes/scrapeindex"
+    r = HTTP.post(
+        url,
+        c.headers,
+        JSON.json(record),
+        require_ssl_verification = c.verify
+    )
+    response = JSON.parse(String(r.body))
+    if r.status == 200
+        return SocratesResponse(true, nothing)
+    else
+        return SocratesResponse(false, response::Dict)
+    end
+end
+
 export Socrates
 export SocratesResponse
 export push_raw_data
