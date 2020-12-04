@@ -235,5 +235,6 @@ export get_raw_data
 export get_definition
 export get_iteration_set
 export get_metric_fields
+export push_to_scrapeindex
 
 end # module
