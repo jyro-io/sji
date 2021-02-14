@@ -228,6 +228,34 @@ function push_to_scrapeindex(c::Socrates, record::Dict)::SocratesResponse
     end
 end
 
+function get_unreviewed_index_records(c::Socrates, name::String)::SocratesResponse
+    #=
+    Get scrapeindex records
+
+    positional arguments:
+        c <Socrates> client type
+        name <String> metric name
+    =#
+
+    url = c.protocol*"://"*c.host*"/archimedes/scrapeindex"
+    params = Dict{String,String}(
+        "operation"=>"get_unreviewed_index_records",
+        "name"=>name
+    )
+    r = HTTP.post(
+        url,
+        c.headers,
+        JSON.json(params),
+        require_ssl_verification = c.verify
+    )
+    response = JSON.parse(String(r.body))
+    if r.status == 200
+        return SocratesResponse(true, nothing)
+    else
+        return SocratesResponse(false, response::Dict)
+    end
+end
+
 export Socrates
 export SocratesResponse
 export push_raw_data
