@@ -230,14 +230,14 @@ end
 
 function get_unreviewed_index_records(c::Socrates, name::String)::SocratesResponse
     #=
-    Get scrapeindex records
+    Get scrapeindex records in state "new"
 
     positional arguments:
         c <Socrates> client type
         name <String> metric name
     =#
 
-    url = c.protocol*"://"*c.host*"/archimedes/scrapeindex"
+    url = c.protocol*"://"*c.host*"/archimedes/scraper"
     params = Dict{String,String}(
         "operation"=>"get_unreviewed_index_records",
         "name"=>name
