@@ -10,7 +10,6 @@ using Dates
     #=
     Construct an authenticated Socrates client
     keyword arguments:
-        log_level <int> log output threshold level
         protocol <string> HTTP/HTTPS
         host <string> Socrates host
         username <string> Socrates username
@@ -18,7 +17,6 @@ using Dates
         verify <bool> SSL verify
     =#
 
-    log_level::UInt8 = 3
     protocol::String = "https"
     host::String = "api.jyro.io"
     username::String
@@ -26,7 +24,7 @@ using Dates
     verify::Bool = true
     headers::Array = ["Content-Type" => "application/json"]
 
-    function Socrates(log_level, protocol, host, username, password, verify, headers)
+    function Socrates(protocol, host, username, password, verify, headers)
         url = protocol*"://"*host*"/auth"
         params = Dict{String,String}(
             "username"=>username,
@@ -46,7 +44,7 @@ using Dates
         else
             error("failed to get token: return code: "*string(r.status)*", expected 200: response: "*response)
         end
-        new(log_level, protocol, host, username, password, verify, headers)
+        new(protocol, host, username, password, verify, headers)
     end
 end
 
@@ -228,9 +226,9 @@ function push_to_scrapeindex(c::Socrates, record::Dict)::SocratesResponse
     end
 end
 
-function get_unreviewed_index_records(c::Socrates, name::String)::SocratesResponse
+function get_unreviewed_index_records(c::Socrates, name::String, datasource::String)::SocratesResponse
     #=
-    Get scrapeindex records in state "new"
+    Get index records in state "new"
 
     positional arguments:
         c <Socrates> client type
@@ -240,7 +238,8 @@ function get_unreviewed_index_records(c::Socrates, name::String)::SocratesRespon
     url = c.protocol*"://"*c.host*"/archimedes/scraper"
     params = Dict{String,String}(
         "operation"=>"get_unreviewed_index_records",
-        "name"=>name
+        "name"=>name,
+        "datasource"=>datasource
     )
     r = HTTP.post(
         url,
