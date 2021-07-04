@@ -10,12 +10,12 @@ can hit the ground running.
 
 ### Install
 
-This package supports Julia 1.5.2
+This package supports Julia 1.5.4
 
 #### Stable
 
 ```bash
-pkg> add https://github.com/jyro-io/sji/#0.6.0
+pkg> add https://github.com/jyro-io/sji/#1.0.0
 ```
 
 #### Dev
