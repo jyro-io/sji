@@ -255,6 +255,35 @@ function get_unreviewed_index_records(c::Socrates, name::String, datasource::Str
     end
 end
 
+function get_config(c::Socrates, api::String, api_module::String, name::String)::SocratesResponse
+    #=
+    Get a JSON definition record from a specified api.module endpoint
+
+    positional arguments:
+        c <Socrates> client type
+        api <String> [archimedes,socrates]
+        key <String> configuration key to query
+    =#
+
+    url = c.protocol*"://"*c.host*"/"*api*"/_config"
+    params = Dict{String,String}(
+        "operation"=>"get",
+        "key"=>key
+    )
+    r = HTTP.post(
+        url,
+        c.headers,
+        JSON.json(params),
+        require_ssl_verification = c.verify
+    )
+    response = JSON.parse(String(r.body))
+    if r.status == 200
+        return SocratesResponse(true, response::Dict)
+    else
+        return SocratesResponse(false, response::Dict)
+    end
+end
+
 export Socrates
 export SocratesResponse
 export push_raw_data
@@ -263,5 +292,7 @@ export get_definition
 export get_iteration_set
 export get_metric_fields
 export push_to_scrapeindex
+export get_unreviewed_index_records
+export get_config
 
 end # module

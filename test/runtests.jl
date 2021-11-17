@@ -6,7 +6,7 @@ using JSON
 @testset "sji.jl" begin
     socrates = sji.Socrates(
         protocol="http",
-        host="localhost",
+        host="socrates",
         username="test",
         password="iP6mp8PUJC70ioi3M9lX7YxP",
         verify=false
@@ -68,6 +68,15 @@ using JSON
     )
     if sr.status != true
         error("failed to get iteration set: "*sr.response)
+    end
+    println(sr.response)
+
+    sr = sji.get_config(
+        socrates,
+        "test"
+    )
+    if sr.status != true
+        error("failed to get config: "*sr.response)
     end
     println(sr.response)
 end

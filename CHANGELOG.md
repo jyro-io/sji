@@ -1,3 +1,8 @@
+### 1.1.0
+
+* adding get_config()
+* adding export for get_unreviewed_index_records()
+
 ### 1.0.0
 
 * updating Socrates interface
