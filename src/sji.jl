@@ -255,7 +255,7 @@ function get_unreviewed_index_records(c::Socrates, name::String, datasource::Str
     end
 end
 
-function get_config(c::Socrates, api::String, api_module::String, name::String)::SocratesResponse
+function get_config(c::Socrates, api::String, key::String,)::SocratesResponse
     #=
     Get a JSON definition record from a specified api.module endpoint
 
