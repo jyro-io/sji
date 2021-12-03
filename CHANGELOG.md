@@ -1,3 +1,7 @@
+### 2.0.0
+
+* get_config(): automatically return body of config, instead of returning full JSON
+
 ### 1.1.0
 
 * adding get_config()

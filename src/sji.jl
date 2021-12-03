@@ -277,6 +277,7 @@ function get_config(c::Socrates, api::String, key::String,)::SocratesResponse
         require_ssl_verification = c.verify
     )
     response = JSON.parse(String(r.body))
+    response = response[key]
     if r.status == 200
         return SocratesResponse(true, response::Dict)
     else
