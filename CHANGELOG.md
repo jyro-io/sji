@@ -1,3 +1,7 @@
+### 2.1.0
+
+* reverting 2.0.0, socrates API already does this
+
 ### 2.0.0
 
 * get_config(): automatically return body of config, instead of returning full JSON
