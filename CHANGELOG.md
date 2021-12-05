@@ -1,6 +1,12 @@
+### 3.0.0
+
+* adding update_config()
+* removing
+* fixing indentation
+
 ### 2.1.0
 
-* reverting 2.0.0, socrates API already does this
+* reverting 2.0.0, socrates API already does that
 
 ### 2.0.0
 
