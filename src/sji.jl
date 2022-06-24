@@ -5,6 +5,8 @@ using Parameters
 using JSON
 using HTTP
 using Dates
+using Mongoc
+using DataFrames
 
 @with_kw struct Socrates
   #=
@@ -289,6 +291,40 @@ function update_config(c::Socrates, api::String, key::String, config::Dict)::Soc
   end
 end
 
+function get_mongo_records(collection::Mongoc.AbstractCollection, include::Tuple, exclude::Tuple, bson_options::Mongoc.BSON)::DataFrame
+  data = DataFrame()
+  records = collect(Mongoc.find(collection, options=bson_options))
+  for (index, doc) in enumerate(records)
+    doc = Mongoc.as_dict(doc)
+    for field in exclude
+      delete!(doc, field)
+    end
+    # init columns
+    if index == 1
+      for field in include
+        # fast generic type detection
+        data[!, field] = Array{typeof(doc[field]),1}()
+      end
+    end
+    push!(data, doc)
+  end
+  return data
+end
+
+function connect_to_datasource(s::Socrates, name::String)::Mongoc.Client
+  sr = get_definition(
+    s,
+    "archimedes",
+    "datasource",
+    name
+  )
+  if sr.status != true
+    error("failed to get datasource definition: "*sr.response)
+  end
+  ds = sr.response
+  return Mongoc.Client("mongodb://"*ds["username"]*":"*ds["password"]*"@"*ds["host"]*"/?authSource=admin")
+end
+
 export Socrates
 export SocratesResponse
 export push_raw_data
@@ -300,5 +336,7 @@ export push_to_scrapeindex
 export get_unreviewed_index_records
 export get_config
 export update_config
+export get_mongo_records
+export connect_to_datasource
 
 end # module

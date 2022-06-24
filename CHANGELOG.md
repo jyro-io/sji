@@ -1,3 +1,8 @@
+### 3.1.0
+
+* adding get_mongo_records()
+* adding connect_to_datasource()
+
 ### 3.0.0
 
 * adding update_config()

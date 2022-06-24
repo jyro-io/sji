@@ -6,19 +6,16 @@ Julia is a high-performance language for technical computing,
 and pairs well with the functionality Socrates offers.
 
 This package provides an interface where those versed in Julia
-can hit the ground running.
+can hit the ground running. It defines functions that abstract 
+many simpler operations into a more human-friendly workflow.
 
-### Install
+### Requirements
 
-This package supports Julia 1.5.4
+This package supports Julia 1.7.2
 
-#### Stable
+#### Installation
 
-```bash
-pkg> add https://github.com/jyro-io/sji/#1.1.0
-```
-
-#### Dev
+This package should not be considered stable yet
 
 ```bash
 pkg> add https://github.com/jyro-io/sji
