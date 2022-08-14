@@ -1,3 +1,7 @@
+### 3.3.0
+
+* adding get_metadata function for generalized ETL
+
 ### 3.2.0
 
 * adding kafka logic to get_raw_data

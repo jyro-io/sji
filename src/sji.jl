@@ -55,6 +55,44 @@ struct SocratesResponse
   response
 end
 
+function get_metadata(datasource, scraper_definition)::SocratesResponse
+  metrics = Dict()
+  fields = []
+  scraper_definition["rules"]::Array
+  # scan definition rules for fields
+  for rule in scraper_definition["rules"]
+    rule::Dict
+    if ==(haskey(rule, "field"), true)
+      if ===(typeof(rule["field"]), String)
+        if ===(findfirst(x->x==rule["field"], fields), nothing)
+          push!(fields, rule["field"])
+        end
+      end
+    end
+  end
+  # scan datasource ETL pipeline for metrics
+  datasource["metadata"]["etl"]::Array
+  for op in datasource["metadata"]["etl"]
+    op::Dict
+    if ==(op["operation"], "metric")
+      if ==(op["pull_fields"], true)
+        for k in keys(op["parameters"])
+          if ===(findfirst(x->x==k, fields), nothing)
+            push!(fields, k)
+          end
+        end
+      end
+      # metrics can be used multiple times in the pipeline;
+      # the last one will be the final form
+      metrics[op["name"]] = op["parameters"]
+    end
+  end
+  if ==(isempty(metrics), true) || ==(length(fields), 0)
+    return SocratesResponse(false, (metrics, fields))
+  end
+  return SocratesResponse(true, (metrics, fields))
+end
+
 function push_raw_data(c::Socrates, name::String, records::Array)::SocratesResponse
   #=
   Push raw data to Socrates
@@ -333,6 +371,7 @@ end
 
 export Socrates
 export SocratesResponse
+export get_metadata
 export push_raw_data
 export get_raw_data
 export get_definition
