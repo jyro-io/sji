@@ -8,6 +8,8 @@ using Dates
 using Mongoc
 using DataFrames
 
+include("metrics.jl")
+
 @with_kw struct Socrates
   #=
   Construct an authenticated Socrates client
@@ -91,6 +93,18 @@ function get_metadata(datasource, scraper_definition)::SocratesResponse
     return SocratesResponse(false, (metrics, fields))
   end
   return SocratesResponse(true, (metrics, fields))
+end
+
+function etl(p::WorkerParams, data::DataFrame)::DataFrame
+  if ==(haskey(p.datasource["metadata"], "etl"), true)
+    for op in p.datasource["metadata"]["etl"]
+      if ==(op["operation"], "metric")
+        for (i, d) in enumerate(eachrow(data))
+          data[i, op["name"]] = calc_metric(op["name"], op["parameters"], d)
+        end
+      end
+    end
+  return data
 end
 
 function push_raw_data(c::Socrates, name::String, records::Array)::SocratesResponse

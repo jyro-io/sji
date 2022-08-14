@@ -1,6 +1,10 @@
+### 3.4.0
+
+* generalizing ETL
+
 ### 3.3.0
 
-* adding get_metadata function for generalized ETL
+* adding get_metadata function to enable generalized ETL
 
 ### 3.2.0
 
