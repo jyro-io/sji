@@ -8,6 +8,8 @@ using Dates
 using Mongoc
 using DataFrames
 
+include("metrics.jl")
+
 @with_kw struct Socrates
   #=
   Construct an authenticated Socrates client
@@ -331,9 +333,6 @@ function connect_to_datasource(s::Socrates, name::String)::Mongoc.Client
   return Mongoc.Client("mongodb://"*ds["username"]*":"*ds["password"]*"@"*ds["host"]*"/?authSource=admin")
 end
 
-## advanced, unexported functionality
-include("metrics.jl")
-
 function get_metadata(datasource, scraper_definition)::SocratesResponse
   metrics = Dict()
   fields = []
@@ -384,7 +383,6 @@ function etl(datasource::Dict, data::DataFrame)::DataFrame
   end
   return data
 end
-##
 
 export Socrates
 export SocratesResponse
@@ -399,5 +397,7 @@ export get_config
 export update_config
 export get_mongo_records
 export connect_to_datasource
+export get_metadata
+export etl
 
 end # module

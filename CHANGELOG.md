@@ -1,3 +1,7 @@
+### 3.6.0
+
+* fix exports
+
 ### 3.5.0
 
 * make exports make sense
