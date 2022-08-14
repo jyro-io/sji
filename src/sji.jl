@@ -95,15 +95,16 @@ function get_metadata(datasource, scraper_definition)::SocratesResponse
   return SocratesResponse(true, (metrics, fields))
 end
 
-function etl(p::WorkerParams, data::DataFrame)::DataFrame
-  if ==(haskey(p.datasource["metadata"], "etl"), true)
-    for op in p.datasource["metadata"]["etl"]
+function etl(datasource::Dict, data::DataFrame)::DataFrame
+  if ==(haskey(datasource["metadata"], "etl"), true)
+    for op in datasource["metadata"]["etl"]
       if ==(op["operation"], "metric")
         for (i, d) in enumerate(eachrow(data))
           data[i, op["name"]] = calc_metric(op["name"], op["parameters"], d)
         end
       end
     end
+  end
   return data
 end
 
