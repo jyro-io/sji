@@ -8,8 +8,6 @@ using Dates
 using Mongoc
 using DataFrames
 
-include("metrics.jl")
-
 @with_kw struct Socrates
   #=
   Construct an authenticated Socrates client
@@ -55,57 +53,6 @@ end
 struct SocratesResponse
   status::Bool
   response
-end
-
-function get_metadata(datasource, scraper_definition)::SocratesResponse
-  metrics = Dict()
-  fields = []
-  scraper_definition["rules"]::Array
-  # scan definition rules for fields
-  for rule in scraper_definition["rules"]
-    rule::Dict
-    if ==(haskey(rule, "field"), true)
-      if ===(typeof(rule["field"]), String)
-        if ===(findfirst(x->x==rule["field"], fields), nothing)
-          push!(fields, rule["field"])
-        end
-      end
-    end
-  end
-  # scan datasource ETL pipeline for metrics
-  datasource["metadata"]["etl"]::Array
-  for op in datasource["metadata"]["etl"]
-    op::Dict
-    if ==(op["operation"], "metric")
-      if ==(op["pull_fields"], true)
-        for k in keys(op["parameters"])
-          if ===(findfirst(x->x==k, fields), nothing)
-            push!(fields, k)
-          end
-        end
-      end
-      # metrics can be used multiple times in the pipeline;
-      # the last one will be the final form
-      metrics[op["name"]] = op["parameters"]
-    end
-  end
-  if ==(isempty(metrics), true) || ==(length(fields), 0)
-    return SocratesResponse(false, (metrics, fields))
-  end
-  return SocratesResponse(true, (metrics, fields))
-end
-
-function etl(datasource::Dict, data::DataFrame)::DataFrame
-  if ==(haskey(datasource["metadata"], "etl"), true)
-    for op in datasource["metadata"]["etl"]
-      if ==(op["operation"], "metric")
-        for (i, d) in enumerate(eachrow(data))
-          data[i, op["name"]] = calc_metric(op["name"], op["parameters"], d)
-        end
-      end
-    end
-  end
-  return data
 end
 
 function push_raw_data(c::Socrates, name::String, records::Array)::SocratesResponse
@@ -384,9 +331,63 @@ function connect_to_datasource(s::Socrates, name::String)::Mongoc.Client
   return Mongoc.Client("mongodb://"*ds["username"]*":"*ds["password"]*"@"*ds["host"]*"/?authSource=admin")
 end
 
+## advanced, unexported functionality
+include("metrics.jl")
+
+function get_metadata(datasource, scraper_definition)::SocratesResponse
+  metrics = Dict()
+  fields = []
+  scraper_definition["rules"]::Array
+  # scan definition rules for fields
+  for rule in scraper_definition["rules"]
+    rule::Dict
+    if ==(haskey(rule, "field"), true)
+      if ===(typeof(rule["field"]), String)
+        if ===(findfirst(x->x==rule["field"], fields), nothing)
+          push!(fields, rule["field"])
+        end
+      end
+    end
+  end
+  # scan datasource ETL pipeline for metrics
+  datasource["metadata"]["etl"]::Array
+  for op in datasource["metadata"]["etl"]
+    op::Dict
+    if ==(op["operation"], "metric")
+      if ==(op["pull_fields"], true)
+        for k in keys(op["parameters"])
+          if ===(findfirst(x->x==k, fields), nothing)
+            push!(fields, k)
+          end
+        end
+      end
+      # metrics can be used multiple times in the pipeline;
+      # the last one will be the final form
+      metrics[op["name"]] = op["parameters"]
+    end
+  end
+  if ==(isempty(metrics), true) || ==(length(fields), 0)
+    return SocratesResponse(false, (metrics, fields))
+  end
+  return SocratesResponse(true, (metrics, fields))
+end
+
+function etl(datasource::Dict, data::DataFrame)::DataFrame
+  if ==(haskey(datasource["metadata"], "etl"), true)
+    for op in datasource["metadata"]["etl"]
+      if ==(op["operation"], "metric")
+        for (i, d) in enumerate(eachrow(data))
+          data[i, op["name"]] = calc_metric(op["name"], op["parameters"], d)
+        end
+      end
+    end
+  end
+  return data
+end
+##
+
 export Socrates
 export SocratesResponse
-export get_metadata
 export push_raw_data
 export get_raw_data
 export get_definition

@@ -1,3 +1,7 @@
+### 3.5.0
+
+* make exports make sense
+
 ### 3.4.0
 
 * generalizing ETL
