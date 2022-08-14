@@ -333,7 +333,7 @@ function connect_to_datasource(s::Socrates, name::String)::Mongoc.Client
   return Mongoc.Client("mongodb://"*ds["username"]*":"*ds["password"]*"@"*ds["host"]*"/?authSource=admin")
 end
 
-function get_metadata(datasource, scraper_definition)::SocratesResponse
+function get_metadata(datasource::Dict, scraper_definition::Dict)::SocratesResponse
   metrics = Dict()
   fields = []
   scraper_definition["rules"]::Array
