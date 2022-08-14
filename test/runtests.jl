@@ -34,10 +34,10 @@ using JSON
 
   sr = sji.get_raw_data(
     socrates,
-    "test",
     "iter_value",
     Dates.format(push_before, timestamp_format),
-    Dates.format(push_after, timestamp_format)
+    Dates.format(push_after, timestamp_format);
+    key="test"
   )
   if sr.status != true
     error("failed to get raw data: "*sr.response)

@@ -1,3 +1,7 @@
+### 3.2.0
+
+* adding kafka logic to get_raw_data
+
 ### 3.1.0
 
 * adding get_mongo_records()

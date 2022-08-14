@@ -84,14 +84,14 @@ function push_raw_data(c::Socrates, name::String, records::Array)::SocratesRespo
   end
 end
 
-function get_raw_data(c::Socrates, name::String, key::String, time_start::String, time_end::String)::SocratesResponse
+function get_raw_data(c::Socrates, name::String, time_start::String, time_end::String; key=nothing, topic=nothing)::SocratesResponse
   #=
   Get raw data from Socrates
 
   positional arguments:
     c <Socrates> client type
     name <String> datasource name
-    key <String> iter_field key
+    key/topic <String> key to find data
     time_start <String> time series start
     time_end <String> time series end
   =#
@@ -100,10 +100,16 @@ function get_raw_data(c::Socrates, name::String, key::String, time_start::String
   params = Dict{String,String}(
     "operation"=>"get_raw_data",
     "name"=>name,
-    "key"=>key,
     "start"=>time_start,
     "end"=>time_end
   )
+  if !=(key, nothing) && !=(topic, nothing)
+    return SocratesResponse(false, Dict("error"=>"key and topic parameters are mutually exclusive"))
+  elseif key::String
+    params["key"] = key
+  elseif topic::String
+    params["topic"] = topic
+  end
   r = HTTP.post(
     url,
     c.headers,
