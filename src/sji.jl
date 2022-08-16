@@ -99,7 +99,7 @@ function get_raw_data(c::Socrates, name::String, time_start, time_end; key=nothi
   =#
 
   url = c.protocol*"://"*c.host*"/archimedes/datasource"
-  params = Dict{String,String}(
+  params = Dict{String,Any}(
     "operation"=>"get_raw_data",
     "name"=>name,
     "start"=>time_start,
