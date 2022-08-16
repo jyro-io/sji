@@ -86,7 +86,7 @@ function push_raw_data(c::Socrates, name::String, records::Array)::SocratesRespo
   end
 end
 
-function get_raw_data(c::Socrates, name::String, time_start::String, time_end::String; key=nothing, topic=nothing)::SocratesResponse
+function get_raw_data(c::Socrates, name::String, time_start, time_end; key=nothing, topic=nothing)::SocratesResponse
   #=
   Get raw data from Socrates
 
