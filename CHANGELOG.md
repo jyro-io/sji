@@ -1,3 +1,7 @@
+### 3.6.1
+
+* fix get_raw_data
+
 ### 3.6.0
 
 * fix exports

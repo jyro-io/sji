@@ -107,9 +107,9 @@ function get_raw_data(c::Socrates, name::String, time_start::String, time_end::S
   )
   if !=(key, nothing) && !=(topic, nothing)
     return SocratesResponse(false, Dict("error"=>"key and topic parameters are mutually exclusive"))
-  elseif key::String
+  elseif ==(String, typeof(key))
     params["key"] = key
-  elseif topic::String
+  elseif ==(String, typeof(topic))
     params["topic"] = topic
   end
   r = HTTP.post(
