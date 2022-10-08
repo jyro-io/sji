@@ -5,7 +5,7 @@ using JSON
 
 @testset "sji.jl" begin
   socrates = sji.Socrates(
-    protocol="http",
+    protocol="https",
     host="socrates",
     username="test",
     password="iP6mp8PUJC70ioi3M9lX7YxP",

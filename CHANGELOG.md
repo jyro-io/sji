@@ -1,4 +1,10 @@
-### 3.6.1
+### 3.8.0
+
+* julia 1.7 -> 1.8.2
+* add ssl renegotiation: https://github.com/JuliaWeb/HTTP.jl/issues/342
+* package manifest updates
+
+### 3.7.1
 
 * fix params Dict type restriction in get_raw_data
 
