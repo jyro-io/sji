@@ -344,7 +344,7 @@ function connect_to_datasource(s::Socrates, name::String)::Mongoc.Client
     error("failed to get datasource definition: "*sr.response)
   end
   ds = sr.response
-  return Mongoc.Client("mongodb://"*ds["username"]*":"*ds["password"]*"@"*ds["host"]*"/?authSource=admin")
+  return Mongoc.Client("mongodb://"*ds["replication"]["username"]*":"*ds["replication"]["password"]*"@"*ds["replication"]["host"]*"/"*ds["replication"]["options"])
 end
 
 function get_metadata(datasource::Dict, scraper_definition::Dict)::SocratesResponse

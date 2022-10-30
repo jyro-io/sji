@@ -1,3 +1,7 @@
+### 3.10.0
+
+* feature: connect to mongo replicaset
+
 ### 3.9.0
 
 * feature: adding filter to get_mongo_records
