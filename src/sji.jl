@@ -313,9 +313,9 @@ function update_config(c::Socrates, api::String, key::String, config::Dict)::Soc
   end
 end
 
-function get_mongo_records(collection::Mongoc.Collection, include::Tuple, exclude::Tuple, bson_options::Mongoc.BSON)::DataFrame
+function get_mongo_records(collection::Mongoc.Collection, filter::Mongoc.BSON, include::Tuple, exclude::Tuple, bson_options::Mongoc.BSON)::DataFrame
   data = DataFrame()
-  records = collect(Mongoc.find(collection, options=bson_options))
+  records = collect(Mongoc.find(collection, filter, options=bson_options))
   for (index, doc) in enumerate(records)
     doc = Mongoc.as_dict(doc)
     for field in exclude

@@ -1,3 +1,7 @@
+### 3.9.0
+
+* feature: adding filter to get_mongo_records
+
 ### 3.8.0
 
 * julia 1.7 -> 1.8.2
