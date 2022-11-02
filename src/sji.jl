@@ -344,7 +344,11 @@ function connect_to_datasource(s::Socrates, name::String)::Mongoc.Client
     error("failed to get datasource definition: "*sr.response)
   end
   ds = sr.response
-  return Mongoc.Client("mongodb://"*ds["replication"]["username"]*":"*ds["replication"]["password"]*"@"*ds["replication"]["host"]*"/"*ds["replication"]["options"])
+  if ==("kafka", ds["type"])
+    return Mongoc.Client("mongodb://"*ds["replication"]["username"]*":"*ds["replication"]["password"]*"@"*ds["replication"]["host"]*"/"*ds["replication"]["options"])
+  elseif ==("mongo", ds["type"])
+    return Mongoc.Client("mongodb://"*ds["username"]*":"*ds["password"]*"@"*ds["host"]*"/"*ds["options"])
+  end
 end
 
 function get_metadata(datasource::Dict, scraper_definition::Dict)::SocratesResponse

@@ -1,3 +1,7 @@
+### 3.10.1
+
+* bugfix: support connecting to native and replicated mongo datasources
+
 ### 3.10.0
 
 * feature: connect to mongo replicaset
