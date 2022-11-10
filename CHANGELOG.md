@@ -1,3 +1,7 @@
+### 3.10.3
+
+* feature: add debug flag to socrates object
+
 ### 3.10.2
 
 * housekeeping: upgrade package manifest; hoping MbedTLS 1.1.6 -> 1.1.7 fixes ssl renegotiation problem

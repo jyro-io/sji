@@ -31,8 +31,10 @@ include("metrics.jl")
   verify::Bool = true
   conf::SSLConfig = MbedTLS.SSLConfig(verify)
   headers::Array = ["Content-Type" => "application/json"]
+  debug::Int32 = 1
 
-  function Socrates(protocol, host, username, password, verify, conf, headers)
+  function Socrates(protocol, host, username, password, verify, conf, headers, debug)
+    MbedTLS.set_dbg_level(debug)
     MbedTLS.ssl_conf_renegotiation!(conf, MbedTLS.MBEDTLS_SSL_RENEGOTIATION_ENABLED)
     url = protocol*"://"*host*"/auth"
     params = Dict{String,String}(
@@ -54,7 +56,7 @@ include("metrics.jl")
     else
       error("failed to get token: return code: "*string(r.status)*", expected 200: response: "*response)
     end
-    new(protocol, host, username, password, verify, conf, headers)
+    new(protocol, host, username, password, verify, conf, headers, debug)
   end
 end
 
