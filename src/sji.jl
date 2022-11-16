@@ -404,6 +404,21 @@ function etl(datasource::Dict, data::DataFrame)::DataFrame
   return data
 end
 
+function get_slice_by_time_interval(data::DataFrame, field::String, start::DateTime, stop::DateTime)::DataFrame
+  bindex = 1
+  eindex = nrow(data)
+  for (index, record) in enumerate(eachrow(data))
+    if ==(DateTime, typeof(record[field]))
+      if >=(start, record[field])
+        bindex = index
+      elseif >=(stop, record[field])
+        eindex = index
+      end
+    end
+  end
+  return data[bindex:eindex, :]
+end
+
 export Socrates
 export SocratesResponse
 export push_raw_data
@@ -419,5 +434,6 @@ export get_mongo_records
 export connect_to_datasource
 export get_metadata
 export etl
+export get_slice_by_time_interval
 
 end # module

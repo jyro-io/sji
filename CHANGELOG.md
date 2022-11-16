@@ -1,3 +1,7 @@
+### 3.11.0
+
+* feature: add get_slice_by_time_interval
+
 ### 3.10.3
 
 * feature: add debug flag to socrates object
