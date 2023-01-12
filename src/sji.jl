@@ -395,8 +395,12 @@ function etl(datasource::Dict, data::DataFrame)::DataFrame
   if ==(haskey(datasource["metadata"], "etl"), true)
     for op in datasource["metadata"]["etl"]
       if ==(op["operation"], "metric")
-        for (i, d) in enumerate(eachrow(data))
-          data[i, op["name"]] = calc_metric(op["name"], op["parameters"], d)
+        if ==(op["name"], "sma")
+          data = sma(op["parameters"], data)
+        else
+          for (i, d) in enumerate(eachrow(data))
+            data[i, op["name"]] = calc_metric(op["name"], op["parameters"], d)
+          end
         end
       end
     end

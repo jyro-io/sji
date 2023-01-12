@@ -1,3 +1,8 @@
+### 3.12.0
+
+* feature: add SMA metric
+* remove Manifest.toml file
+
 ### 3.11.0
 
 * feature: add get_slice_by_time_interval
