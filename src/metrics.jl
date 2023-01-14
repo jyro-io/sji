@@ -49,7 +49,7 @@ function sma(p::Dict, d::DataFrame)::DataFrame
     end
     # calculate SMA
     pst = 1  # period start
-    pst = pst + ps  # period end
+    pe = pst + ps  # period end
     for (i, r) in enumerate(eachrow(d[pe:end, :]))
       d[i, pf] = sum(d[pst:pe, :][p["data_field"]]) / ps
     end
