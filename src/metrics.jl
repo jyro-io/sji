@@ -35,7 +35,7 @@ end
 function sma(p::Dict, d::DataFrame)::DataFrame
   # calculate SMA
   for period in p["periods"]
-    pf = "sma_"*String(period)  # period field
+    pf = "sma_"*string(period)  # period field
     # find the period size for this dataset
     ps = 0
     for (i, r) in enumerate(eachrow(d))
@@ -56,7 +56,7 @@ function sma(p::Dict, d::DataFrame)::DataFrame
   end
   # remove rows without SMA fields
   for period in p["periods"]
-    pf = "sma_"*String(period)
+    pf = "sma_"*string(period)
     for (i, r) in enumerate(eachrow(d))
       if ==(haskey(r, pf), false)
         delete!(d, i)
