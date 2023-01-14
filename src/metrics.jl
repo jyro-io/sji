@@ -51,7 +51,7 @@ function sma(p::Dict, d::DataFrame)::DataFrame
     pst = 1  # period start
     pe = pst + ps  # period end
     for (i, r) in enumerate(eachrow(d[pe:end, :]))
-      d[i, pf] = sum(d[pst:pe, :][p["data_field"]]) / ps
+      d[i, pf] = sum(d[pst:pe, p["data_field"]]) / ps
     end
   end
   # remove rows without SMA fields
