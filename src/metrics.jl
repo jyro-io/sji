@@ -64,5 +64,6 @@ function sma(p::Dict, d::DataFrame)::DataFrame
       end
     end
   end
+  select!(d, not("sma"))
   return d
 end
