@@ -385,6 +385,9 @@ function get_metadata(datasource::Dict, scraper_definition::Dict)::SocratesRespo
       metrics[op["name"]] = op["parameters"]
     end
   end
+  if haskey(metrics, "sma")
+    delete!(metrics, "sma")
+  end
   if ==(isempty(metrics), true) || ==(length(fields), 0)
     return SocratesResponse(false, (metrics, fields))
   end
