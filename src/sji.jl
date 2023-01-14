@@ -380,12 +380,21 @@ function get_metadata(datasource::Dict, scraper_definition::Dict)::SocratesRespo
           end
         end
       end
-      # metrics can be used multiple times in the pipeline;
+      # metrics can be used multiple times in the pipeline,
+      # allowing recursive metric calculations;
       # the last one will be the final form
       metrics[op["name"]] = op["parameters"]
     end
   end
+  # split SMA into constituent metrics according to configured periods
   if haskey(metrics, "sma")
+    for op in datasource["metadata"]["etl"]
+      if ==(op["name"], "sma")
+        for period in op["parameters"]["periods"]
+          metrics["sma_"*string(period)] = op["parameters"]
+        end
+      end
+    end
     delete!(metrics, "sma")
   end
   if ==(isempty(metrics), true) || ==(length(fields), 0)

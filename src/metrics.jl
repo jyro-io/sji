@@ -47,7 +47,6 @@ function simple_moving_average(p::Dict, d::DataFrame)::DataFrame
     if ==(0, ps)
       return false
     end
-    insertcols!(d, pf=>0.0)
     # calculate SMA
     pst = 1  # period start
     pe = pst + ps  # period end
