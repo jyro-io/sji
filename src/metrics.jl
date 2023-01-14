@@ -64,6 +64,6 @@ function simple_moving_average(p::Dict, d::DataFrame)::DataFrame
       end
     end
   end
-  select!(d, !(:sma))
+  select!(d, Not(:sma))
   return d
 end
