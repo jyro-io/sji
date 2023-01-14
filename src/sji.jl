@@ -396,7 +396,7 @@ function etl(datasource::Dict, data::DataFrame)::DataFrame
     for op in datasource["metadata"]["etl"]
       if ==(op["operation"], "metric")
         if ==(op["name"], "sma")
-          data = sma(op["parameters"], data)
+          data = simple_moving_average(op["parameters"], data)
         else
           for (i, d) in enumerate(eachrow(data))
             data[i, op["name"]] = calc_metric(op["name"], op["parameters"], d)
