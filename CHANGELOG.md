@@ -1,3 +1,8 @@
+### 3.12.1
+
+* add failure condition in SMA function
+* bugfix: SMA metric not calculating correctly
+
 ### 3.12.0
 
 * feature: add SMA metric

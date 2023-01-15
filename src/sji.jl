@@ -409,6 +409,9 @@ function etl(datasource::Dict, data::DataFrame)::DataFrame
       if ==(op["operation"], "metric")
         if ==(op["name"], "sma")
           data = simple_moving_average(op["parameters"], data)
+          if ==(false, data)
+            return false
+          end
         else
           for (i, d) in enumerate(eachrow(data))
             data[i, op["name"]] = calc_metric(op["name"], op["parameters"], d)
