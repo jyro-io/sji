@@ -58,11 +58,15 @@ function simple_moving_average(p::Dict, d::DataFrame)::DataFrame
   end
   for period in p["periods"]
     pf = "sma_"*string(period)
+    # remove rows without SMA fields
     for (i, r) in enumerate(eachrow(d))
-      # remove rows without SMA fields
       if ==(haskey(r, pf), false)
         delete!(d, i)
-      elseif ==(0, r[pf])
+      end
+    end
+    # remove invalid values
+    for (i, r) in enumerate(eachrow(d))
+      if ==(0, r[pf])
         delete!(d, i)
       end
     end
