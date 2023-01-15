@@ -39,7 +39,7 @@ function simple_moving_average(p::Dict, d::DataFrame)::DataFrame
     # find the period size for this dataset
     ps = 0
     for (i, r) in enumerate(eachrow(d))
-      if >(r[p["time_field"]], d[begin, :][p["time_field"]] + Dates.Day(period))
+      if >(r[p["time_field"]], d[begin, p["time_field"]] + Dates.Day(period))
         ps = i  # period size
         break
       end
