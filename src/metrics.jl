@@ -57,7 +57,7 @@ function simple_moving_average(p::Dict, data::DataFrame)::DataFrame
       elseif ==(s-1, pst)
         break
       end
-      data[index, pf] = sum(data[pst:pe, p["data_field"]]) / ps
+      data[pe, pf] = sum(data[pst:pe, p["data_field"]]) / ps
       pst += 1
       pe = pst + ps
     end
