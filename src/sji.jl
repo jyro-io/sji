@@ -457,13 +457,13 @@ function get_ohlc_interval_method(destination::OHLCInterval)
 end
 
 function convert_ohlc_interval(data::DataFrame, time::String, destination::OHLCInterval)::DataFrame
-  converted = empty!(data)
+  converted = empty(data)
   # find the size for this interval
   interval = get_ohlc_interval_method(destination)
   is = 0  # interval size
-  for (i, row) in enumerate(eachrow(data))
+  for (index, row) in enumerate(eachrow(data))
     if >(row[time], data[begin, time] + interval)
-      is = i  # interval size
+      is = index  # interval size
       break
     end
   end
