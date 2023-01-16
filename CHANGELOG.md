@@ -1,3 +1,8 @@
+### 3.13.0
+
+* feature: add candle interval conversion functions
+* minor refactors
+
 ### 3.12.1
 
 * add failure condition in SMA function

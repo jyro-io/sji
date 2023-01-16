@@ -65,6 +65,25 @@ struct SocratesResponse
   response
 end
 
+struct OHLCInterval
+  interval::Int8
+  unit::String
+  method<:Function
+
+  function OHLCInterval(interval, unit, method)
+    if ==("m", unit)
+      method = Dates.Minute
+    elseif ==("h", unit)
+      method = Dates.Hour
+    elseif ==("d", unit)
+      method = Dates.Day
+    else
+      error("invalid unit, expecting [m,h,d]")
+    end 
+    new(interval,unit,method)
+  end
+end
+
 function push_raw_data(c::Socrates, name::String, records::Array)::SocratesResponse
   #=
   Push raw data to Socrates
@@ -426,16 +445,46 @@ end
 function get_slice_by_time_interval(data::DataFrame, field::String, start::DateTime, stop::DateTime)::DataFrame
   bindex = 1
   eindex = nrow(data)
-  for (index, record) in enumerate(eachrow(data))
-    if ==(DateTime, typeof(record[field]))
-      if >=(start, record[field])
+  for (index, row) in enumerate(eachrow(data))
+    if ==(DateTime, typeof(row[field]))
+      if >=(start, row[field])
         bindex = index
-      elseif >=(stop, record[field])
+      elseif >=(stop, row[field])
         eindex = index
       end
     end
   end
   return data[bindex:eindex, :]
+end
+
+function convert_ohlc_interval(data::DataFrame, time::String, destination::OHLCInterval)::DataFrame
+  converted = empty!(data)
+  # find the size for this interval
+  is = 0  # interval size
+  for (i, row) in enumerate(eachrow(data))
+    if >(r[p["time_field"]], d[begin, p["time_field"]] + destination.method(destination.interval))
+      is = i  # interval size
+      break
+    end
+  end
+  if ==(0, ps)
+    return false
+  end
+  ist = 1  # interval start
+  ie = ist + is  # interval end
+  for (index, row) in enumerate(eachrow(data))
+    if ==(index, ie)
+      row[:open] = data[ist, :open]
+      row[:high] = max(data[ist:ie, :high])
+      row[:low] = min(data[ist:ie, :low])
+      row[:close] = data[ie, :close]
+      row[time] = data[ie, time]
+      push!(converted, row)
+      ist = ie
+      ie = ist + ps
+    end
+  end
+  return converted
 end
 
 export Socrates
@@ -454,5 +503,6 @@ export connect_to_datasource
 export get_metadata
 export etl
 export get_slice_by_time_interval
+export convert_ohlc_interval
 
 end # module
