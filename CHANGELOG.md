@@ -1,3 +1,7 @@
+### 4.0.0
+
+* feature: remove explicit exlcude from get_mongo_records in favor of implicit via `field ∉ include`
+
 ### 3.13.0
 
 * feature: add candle interval conversion functions
