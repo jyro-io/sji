@@ -462,7 +462,7 @@ function convert_ohlc_interval(data::DataFrame, time::String, destination::OHLCI
   interval = get_ohlc_interval_method(destination)
   is = 0  # interval size
   for (index, row) in enumerate(eachrow(data))
-    if >(row[time], data[begin, time] + interval)
+    if >=(row[time], data[begin, time] + interval)
       is = index  # interval size
       break
     end

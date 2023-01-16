@@ -32,15 +32,15 @@ end
 
 # TODO: generalize to arbitrary intervals,
 #       currently only days are supported.
-function simple_moving_average(p::Dict, d::DataFrame)::DataFrame
+function simple_moving_average(p::Dict, data::DataFrame)::DataFrame
   # calculate SMA
   for period in p["periods"]
     pf = "sma_"*string(period)  # period field
     # find the period size for this dataset
     ps = 0
-    for (i, r) in enumerate(eachrow(d))
-      if >(r[p["time_field"]], d[begin, p["time_field"]] + Dates.Day(period))
-        ps = i  # period size
+    for (index, row) in enumerate(eachrow(data))
+      if >=(row[p["time_field"]], data[begin, p["time_field"]] + Dates.Day(period))
+        ps = index  # period size
         break
       end
     end
@@ -50,8 +50,14 @@ function simple_moving_average(p::Dict, d::DataFrame)::DataFrame
     # calculate SMA
     pst = 1  # period start
     pe = pst + ps  # period end
-    for (i, r) in enumerate(eachrow(d[pe:end, :]))
-      d[i, pf] = sum(d[pst:pe, p["data_field"]]) / ps
+    s = nrow(data)  # size of dataset
+    while true
+      if <=(s, pe)
+        pe = s
+      elseif ==(s-1, pst)
+        break
+      end
+      data[index, pf] = sum(data[pst:pe, p["data_field"]]) / ps
       pst += 1
       pe = pst + ps
     end
@@ -60,12 +66,12 @@ function simple_moving_average(p::Dict, d::DataFrame)::DataFrame
     pf = "sma_"*string(period)
     # remove invalid values
     indexes = []
-    for (i, r) in enumerate(eachrow(d))
-      if ==(0.0, r[pf])
-        append!(indexes, i)
+    for (index, row) in enumerate(eachrow(d))
+      if ==(0.0, row[pf])
+        append!(indexes, index)
       end
     end
-    delete!(d, indexes)
+    delete!(data, indexes)
   end
-  return d
+  return data
 end
