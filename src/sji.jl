@@ -65,25 +65,6 @@ struct SocratesResponse
   response
 end
 
-struct OHLCInterval
-  interval::Int8
-  unit::String
-  method<:Function
-
-  function OHLCInterval(interval, unit, _)
-    if ==("m", unit)
-      method = Dates.Minute
-    elseif ==("h", unit)
-      method = Dates.Hour
-    elseif ==("d", unit)
-      method = Dates.Day
-    else
-      error("invalid unit, expecting [m,h,d]")
-    end 
-    new(interval,unit,method)
-  end
-end
-
 function push_raw_data(c::Socrates, name::String, records::Array)::SocratesResponse
   #=
   Push raw data to Socrates
@@ -457,9 +438,28 @@ function get_slice_by_time_interval(data::DataFrame, field::String, start::DateT
   return data[bindex:eindex, :]
 end
 
+struct OHLCInterval()
+  interval::Int64
+  unit::String
+end
+
+function get_ohlc_interval_method(destination::OHLCInterval)
+  if ==("m", destination.unit)
+    method = Dates.Minute(destination.interval)
+  elseif ==("h", destination.unit)
+    method = Dates.Hour(destination.interval)
+  elseif ==("d", destination.unit)
+    method = Dates.Day(destination.interval)
+  else
+    error("invalid unit, expecting [m,h,d]")
+  end
+  return method
+end
+
 function convert_ohlc_interval(data::DataFrame, time::String, destination::OHLCInterval)::DataFrame
   converted = empty!(data)
   # find the size for this interval
+  interval = get_ohlc_interval_method(destination)
   is = 0  # interval size
   for (i, row) in enumerate(eachrow(data))
     if >(r[p["time_field"]], d[begin, p["time_field"]] + destination.method(destination.interval))
