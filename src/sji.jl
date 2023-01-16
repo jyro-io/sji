@@ -467,7 +467,7 @@ function convert_ohlc_interval(data::DataFrame, time::String, destination::OHLCI
       break
     end
   end
-  if ==(0, ps)
+  if ==(0, is)
     return false
   end
   ist = 1  # interval start
