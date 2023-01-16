@@ -70,7 +70,7 @@ struct OHLCInterval
   unit::String
   method<:Function
 
-  function OHLCInterval(interval, unit, method)
+  function OHLCInterval(interval, unit, _)
     if ==("m", unit)
       method = Dates.Minute
     elseif ==("h", unit)
