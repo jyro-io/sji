@@ -52,13 +52,10 @@ function simple_moving_average(p::Dict, data::DataFrame)::DataFrame
     pe = pst + ps  # period end
     s = nrow(data)  # size of dataset
     while true
-      if <=(s, pe)
-        pe = s
-      end
-      if ==(s-2, pst)
+      if <=(s, pst)
         break
       end
-      data[pe, pf] = sum(data[pst:pe, p["data_field"]]) / (pe - pst)
+      data[pe, pf] = sum(data[pst:pe, p["data_field"]]) / ps
       pst += 1
       pe = pst + ps
     end
