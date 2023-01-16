@@ -67,7 +67,7 @@ function simple_moving_average(p::Dict, data::DataFrame)::DataFrame
     pf = "sma_"*string(period)
     # remove invalid values
     indexes = []
-    for (index, row) in enumerate(eachrow(d))
+    for (index, row) in enumerate(eachrow(data))
       if ==(0.0, row[pf])
         append!(indexes, index)
       end
