@@ -472,19 +472,20 @@ function convert_ohlc_interval(data::DataFrame, time::String, destination::OHLCI
   end
   ist = 1  # interval start
   ie = ist + is  # interval end
-  for (index, row) in enumerate(eachrow(data))
-    if ==(index, ie)
-      row[:open] = data[ie, :open]
-      row[:high] = maximum(data[ist:ie, :high])
-      row[:low] = minimum(data[ist:ie, :low])
-      row[:close] = data[ie, :close]
-      row[time] = data[ie, time]
-      push!(converted, row)
-      ist = ie
-      ie = ist + is
+  while true
+    if <(nrow(data), ie)
+      return converted
     end
+    row = data[begin, :]
+    row[:open] = data[ist, :open]
+    row[:high] = max(data[ist:ie, :high]...)
+    row[:low] = min(data[ist:ie, :low]...)
+    row[:close] = data[ie, :close]
+    row[time] = data[ie, time]
+    push!(converted, row)
+    ist = ie
+    ie = ist + is
   end
-  return converted
 end
 
 export Socrates
