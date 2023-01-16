@@ -438,7 +438,7 @@ function get_slice_by_time_interval(data::DataFrame, field::String, start::DateT
   return data[bindex:eindex, :]
 end
 
-struct OHLCInterval()
+struct OHLCInterval
   interval::Int64
   unit::String
 end
