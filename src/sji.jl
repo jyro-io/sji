@@ -475,8 +475,8 @@ function convert_ohlc_interval(data::DataFrame, time::String, destination::OHLCI
   for (index, row) in enumerate(eachrow(data))
     if ==(index, ie)
       row[:open] = data[ist, :open]
-      row[:high] = max(data[ist:ie, :high])
-      row[:low] = min(data[ist:ie, :low])
+      row[:high] = maximum(data[ist:ie, :high])
+      row[:low] = minimum(data[ist:ie, :low])
       row[:close] = data[ie, :close]
       row[time] = data[ie, time]
       push!(converted, row)
