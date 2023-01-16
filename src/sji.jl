@@ -474,7 +474,7 @@ function convert_ohlc_interval(data::DataFrame, time::String, destination::OHLCI
   ie = ist + is  # interval end
   for (index, row) in enumerate(eachrow(data))
     if ==(index, ie)
-      row[:open] = data[ist, :open]
+      row[:open] = data[ie, :open]
       row[:high] = maximum(data[ist:ie, :high])
       row[:low] = minimum(data[ist:ie, :low])
       row[:close] = data[ie, :close]
