@@ -1,6 +1,7 @@
 ### 4.0.0
 
 * feature: remove explicit exlcude from get_mongo_records in favor of implicit via `field ∉ include`
+* add option to delete records that don't contain SMA data after calculation
 
 ### 3.13.0
 
