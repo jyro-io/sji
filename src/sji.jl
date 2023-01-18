@@ -405,12 +405,12 @@ function get_metadata(datasource::Dict, scraper_definition::Dict)::SocratesRespo
   return SocratesResponse(true, (metrics, fields))
 end
 
-function etl(datasource::Dict, data::DataFrame)::DataFrame
+function etl(datasource::Dict, data::DataFrame, prune::Bool=true)::DataFrame
   if ==(haskey(datasource["metadata"], "etl"), true)
     for op in datasource["metadata"]["etl"]
       if ==(op["operation"], "metric")
         if ==(op["name"], "sma")
-          data = simple_moving_average(op["parameters"], data)
+          data = simple_moving_average(op["parameters"], data, prune)
           if ==(false, data)
             return false
           end
