@@ -11,16 +11,20 @@ many simpler operations into a more human-friendly workflow.
 
 ### Requirements
 
-This package supports Julia 1.7.2
+This package supports Julia 1.8.5
 
 #### Installation
 
 This package should not be considered stable yet
 
 ```bash
-pkg> add https://github.com/jyro-io/sji
+pkg> add git@github.com:jyro-io/sji.git
 ```
 
 #### Usage
 
 See `test/runtests.jl` for example usage.
+
+We're working on a full application that uses this package to
+showcase the capabilities of using this package to interface
+with our systems. When that's finished, we'll link it here.
