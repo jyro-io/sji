@@ -435,21 +435,21 @@ end
 
 function slice_dataframe_by_time_interval(data::DataFrame, field::String, start::DateTime, stop::DateTime)::DataFrame
   if >(stop, start)
-    bindex = 1
-    eindex = nrow(data)
+    bindex = nothing
+    eindex = nothing
     for (index, row) in enumerate(eachrow(data))
-      if ==(DateTime, typeof(row[field]))
-        if >=(start, row[field])
-          bindex = index
-        end
-        if >=(stop, row[field])
-          eindex = index
-        end
-      else
-        return false
+      row[field]::DateTime
+      if >=(start, row[field])
+        bindex = index
+      elseif >=(stop, row[field])
+        eindex = index
       end
     end
-    return data[bindex:eindex, :]
+    if !=(nothing, bindex) && !=(nothing, eindex)
+      return data[bindex:eindex, :]
+    else 
+      return false
+    end
   else
     return false
   end

@@ -1,3 +1,7 @@
+### 4.2.0
+
+* fixing slice_dataframe_by_time_interval
+
 ### 4.1.0
 
 * get_mongo_records include parameter is now optional
