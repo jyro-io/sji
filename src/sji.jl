@@ -318,29 +318,29 @@ end
 function get_mongo_records(collection::Mongoc.Collection, filter::Mongoc.BSON, bson_options::Mongoc.BSON; include::Tuple=())::DataFrame
   data = DataFrame()
   records = collect(Mongoc.find(collection, filter, options=bson_options))
-  for (index, doc) in enumerate(records)
-    doc = Mongoc.as_dict(doc)
+  for (index, record) in enumerate(records)
+    record = Mongoc.as_dict(record)
     fields = nothing
     if <(0, length(include))
       fields = include
     elseif ==(0, length(include))
-      fields = keys(doc)
+      fields = keys(record)
     else
       return false
     end
-    for field in keys(doc)
+    for field in keys(record)
       if field ∉ fields
-        delete!(doc, field)
+        delete!(record, field)
       end
     end
     # init columns
     if index == 1
       for field in fields
         # fast generic type detection
-        data[!, field] = Array{typeof(doc[field]),1}()
+        data[!, field] = Array{typeof(record[field]),1}()
       end
     end
-    push!(data, doc)
+    push!(data, record)
   end
   return data
 end
