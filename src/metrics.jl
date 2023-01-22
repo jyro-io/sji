@@ -16,7 +16,7 @@ end
 
 function weighted_average(p::Dict, r::DataFrameRow)::Float64
   t = 0.0
-  for k in keys(p)
+  for k ∈ keys(p)
     t = t+(r[k]*p[k])
   end
   return round(t/sum(values(p)); digits=2)
@@ -34,11 +34,11 @@ end
 #       currently only days are supported.
 function simple_moving_average(p::Dict, data::DataFrame, prune::Bool=true)::DataFrame
   # calculate SMA
-  for period in p["periods"]
+  for period ∈ p["periods"]
     pf = "sma_"*string(period)  # period field
     # find the period size for this dataset
     ps = 0
-    for (index, row) in enumerate(eachrow(data))
+    for (index, row) ∈ enumerate(eachrow(data))
       row[p["time_field"]]::DateTime
       if >=(row[p["time_field"]], data[begin, p["time_field"]] + Dates.Day(period))
         ps = index  # period size
@@ -62,11 +62,11 @@ function simple_moving_average(p::Dict, data::DataFrame, prune::Bool=true)::Data
     end
   end
   if prune
-    for period in p["periods"]
+    for period ∈ p["periods"]
       pf = "sma_"*string(period)
       # remove invalid values
       indexes = []
-      for (index, row) in enumerate(eachrow(data))
+      for (index, row) ∈ enumerate(eachrow(data))
         if ==(0.0, row[pf])
           append!(indexes, index)
         end
