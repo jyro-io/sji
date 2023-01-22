@@ -425,7 +425,7 @@ function etl(datasource::Dict, data::DataFrame; prune::Bool=true)::DataFrame
   return data
 end
 
-function get_slice_by_time_interval(data::DataFrame, field::String, start::DateTime, stop::DateTime)::DataFrame
+function slice_dataframe_by_time_interval(data::DataFrame, field::String, start::DateTime, stop::DateTime)::DataFrame
   if >(stop, start)
     bindex = 1
     eindex = nrow(data)
