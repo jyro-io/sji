@@ -512,7 +512,7 @@ export get_mongo_records
 export connect_to_datasource
 export get_metadata
 export etl
-export get_slice_by_time_interval
+export slice_dataframe_by_time_interval
 export convert_ohlc_interval
 
 end # module
