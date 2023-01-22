@@ -315,14 +315,16 @@ function update_config(c::Socrates, api::String, key::String, config::Dict)::Soc
   end
 end
 
-function get_mongo_records(collection::Mongoc.Collection, filter::Mongoc.BSON, include::Tuple, bson_options::Mongoc.BSON)::DataFrame
+function get_mongo_records(collection::Mongoc.Collection, filter::Mongoc.BSON, bson_options::Mongoc.BSON; include::Tuple=())::DataFrame
   data = DataFrame()
   records = collect(Mongoc.find(collection, filter, options=bson_options))
   for (index, doc) in enumerate(records)
     doc = Mongoc.as_dict(doc)
     for field in keys(doc)
-      if field ∉ include
-        delete!(doc, field)
+      if >(0, length(include))
+        if field ∉ include
+          delete!(doc, field)
+        end
       end
     end
     # init columns

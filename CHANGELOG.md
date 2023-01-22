@@ -1,3 +1,7 @@
+### 4.1.0
+
+* get_mongo_records include parameter is now optional
+
 ### 4.0.1
 
 * refactor get_slice_by_time_interval with guardrails
