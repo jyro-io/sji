@@ -426,18 +426,25 @@ function etl(datasource::Dict, data::DataFrame; prune::Bool=true)::DataFrame
 end
 
 function get_slice_by_time_interval(data::DataFrame, field::String, start::DateTime, stop::DateTime)::DataFrame
-  bindex = 1
-  eindex = nrow(data)
-  for (index, row) in enumerate(eachrow(data))
-    if ==(DateTime, typeof(row[field]))
-      if >=(start, row[field])
-        bindex = index
-      elseif >=(stop, row[field])
-        eindex = index
+  if >(stop, start)
+    bindex = 1
+    eindex = nrow(data)
+    for (index, row) in enumerate(eachrow(data))
+      if ==(DateTime, typeof(row[field]))
+        if >=(start, row[field])
+          bindex = index
+        end
+        if >=(stop, row[field])
+          eindex = index
+        end
+      else
+        return false
       end
     end
+    return data[bindex:eindex, :]
+  else
+    return false
   end
-  return data[bindex:eindex, :]
 end
 
 struct OHLCInterval

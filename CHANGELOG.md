@@ -1,3 +1,7 @@
+### 4.0.1
+
+* refactor get_slice_by_time_interval with guardrails
+
 ### 4.0.0
 
 * feature: remove explicit exlcude from get_mongo_records in favor of implicit via `field ∉ include`
