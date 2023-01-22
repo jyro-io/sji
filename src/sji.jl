@@ -320,16 +320,22 @@ function get_mongo_records(collection::Mongoc.Collection, filter::Mongoc.BSON, b
   records = collect(Mongoc.find(collection, filter, options=bson_options))
   for (index, doc) in enumerate(records)
     doc = Mongoc.as_dict(doc)
+    fields = nothing
+    if <(0, length(include))
+      fields = include
+    elseif ==(0, length(include))
+      fields = keys(doc)
+    else
+      return false
+    end
     for field in keys(doc)
-      if >(0, length(include))
-        if field ∉ include
-          delete!(doc, field)
-        end
+      if field ∉ fields
+        delete!(doc, field)
       end
     end
     # init columns
     if index == 1
-      for field in include
+      for field in fields
         # fast generic type detection
         data[!, field] = Array{typeof(doc[field]),1}()
       end
