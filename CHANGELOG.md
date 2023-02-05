@@ -1,3 +1,7 @@
+### 4.2.1
+
+* add check for option field in datasource definition
+
 ### 4.2.0
 
 * fixing slice_dataframe_by_time_interval
