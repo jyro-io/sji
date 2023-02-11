@@ -417,7 +417,7 @@ function get_metadata(datasource::Dict, scraper_definition::Dict)::SocratesRespo
   return SocratesResponse(true, (metrics, fields))
 end
 
-function etl(datasource::Dict, data::DataFrame; prune::Bool=true)::DataFrame
+function etl(datasource::Dict, data::DataFrame; prune::Bool=true)
   if ==(haskey(datasource["metadata"], "etl"), true)
     for op in datasource["metadata"]["etl"]
       if ==(op["operation"], "metric")
