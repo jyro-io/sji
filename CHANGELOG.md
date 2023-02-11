@@ -1,3 +1,7 @@
+### 4.2.2
+
+* bugfix: return value interface for simple_moving_average
+
 ### 4.2.1
 
 * add check for option field in datasource definition

@@ -32,7 +32,7 @@ end
 
 # TODO: generalize to arbitrary intervals,
 #       currently only days are supported.
-function simple_moving_average(p::Dict, data::DataFrame, prune::Bool=true)::DataFrame
+function simple_moving_average(p::Dict, data::DataFrame, prune::Bool=true)
   # calculate SMA
   for period ∈ p["periods"]
     pf = "sma_"*string(period)  # period field
