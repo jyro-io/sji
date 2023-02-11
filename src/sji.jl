@@ -437,7 +437,7 @@ function etl(datasource::Dict, data::DataFrame; prune::Bool=true)
   return data
 end
 
-function slice_dataframe_by_time_interval(data::DataFrame, field::String, start::DateTime, stop::DateTime)::DataFrame
+function slice_dataframe_by_time_interval(data::DataFrame, field::String, start::DateTime, stop::DateTime)
   if >(stop, start)
     bindex = nothing
     eindex = nothing
@@ -477,7 +477,7 @@ function get_ohlc_interval_method(destination::OHLCInterval)
   return method
 end
 
-function convert_ohlc_interval(data::DataFrame, time::String, destination::OHLCInterval)::DataFrame
+function convert_ohlc_interval(data::DataFrame, time::String, destination::OHLCInterval)
   converted = empty(data)
   # find the size for this interval
   interval = get_ohlc_interval_method(destination)
