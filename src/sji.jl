@@ -357,7 +357,11 @@ function connect_to_datasource(s::Socrates, name::String)::Mongoc.Client
   end
   ds = sr.response
   if ==("kafka", ds["type"])
-    return Mongoc.Client("mongodb://"*ds["replication"]["username"]*":"*ds["replication"]["password"]*"@"*ds["replication"]["host"]*"/"*ds["replication"]["options"])
+    if ∈("options", keys(ds))
+      return Mongoc.Client("mongodb://"*ds["replication"]["username"]*":"*ds["replication"]["password"]*"@"*ds["replication"]["host"]*"/"*ds["replication"]["options"])
+    else
+      return Mongoc.Client("mongodb://"*ds["replication"]["username"]*":"*ds["replication"]["password"]*"@"*ds["replication"]["host"])
+    end
   elseif ==("mongo", ds["type"])
     if ∈("options", keys(ds))
       return Mongoc.Client("mongodb://"*ds["username"]*":"*ds["password"]*"@"*ds["host"]*"/"*ds["options"])
