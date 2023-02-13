@@ -513,6 +513,30 @@ function convert_ohlc_interval(data::DataFrame, time::String, destination::OHLCI
   end
 end
 
+function convert_realtime_to_ohlc(data::DataFrame, time_field::String, value_field::String; destination::OHLCInterval=OHLCInterval(1, "m"))
+  converted = empty(data)
+  interval = get_ohlc_interval_method(destination)
+  i = 1
+  while true
+    if <(nrow(data), i)
+      return converted
+    end
+    slice = slice_dataframe_by_time_interval(data, time_field, data[i, time_field], data[i, time_field]+interval)
+    if slice
+      row = slice[begin, :]
+      row[:open] = slice[begin, value_field]
+      row[:high] = max(slice[:, value_field]...)
+      row[:low] = min(slice[:, value_field]...)
+      row[:close] = slice[end, value_field]
+      row[time_field] = slice[end, time_field]
+      push!(converted, row)
+      i = nrow(slice) + 1
+    else
+      return converted
+    end
+  end
+end
+
 export Socrates
 export SocratesResponse
 export push_raw_data
@@ -530,5 +554,6 @@ export get_metadata
 export etl
 export slice_dataframe_by_time_interval
 export convert_ohlc_interval
+export convert_realtime_to_ohlc
 
 end # module

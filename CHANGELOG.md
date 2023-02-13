@@ -1,3 +1,7 @@
+### 4.3.0
+
+* added convert_realtime_to_ohlc method
+
 ### 4.2.2
 
 * bugfix: return value interface for simple_moving_average
