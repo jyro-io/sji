@@ -486,7 +486,7 @@ function convert_ohlc_interval(data::DataFrame, time_field::String, destination:
   interval = get_ohlc_interval_method(destination)
   i = 1
   while true
-    if <(nrow(data), ie)
+    if <(nrow(data), i)
       return converted
     end
     slice = slice_dataframe_by_time_interval(data, time_field, data[i, time_field], data[i, time_field]+interval)

@@ -1,6 +1,7 @@
 ### 4.3.0
 
 * added convert_realtime_to_ohlc method
+* refactor convert_ohlc_interval
 
 ### 4.2.2
 
