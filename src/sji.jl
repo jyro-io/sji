@@ -323,15 +323,15 @@ function get_mongo_records(collection::Mongoc.Collection, filter::Mongoc.BSON, b
     fields = nothing
     if <(0, length(include))
       fields = include
+      for field in keys(record)
+        if field ∉ fields
+          delete!(record, field)
+        end
+      end
     elseif ==(0, length(include))
       fields = keys(record)
     else
       return false
-    end
-    for field in keys(record)
-      if field ∉ fields
-        delete!(record, field)
-      end
     end
     # init columns
     if index == 1
@@ -483,23 +483,35 @@ end
 
 function convert_ohlc_interval(data::DataFrame, time_field::String, destination::OHLCInterval)
   converted = empty(data)
-  interval = get_ohlc_interval_method(destination)
+  base_interval = get_ohlc_interval_method(destination)
   i = 1
   while true
-    if <(nrow(data), i)
-      return converted
+    slice = false
+    interval = base_interval
+    last_time = data[end, time_field]
+    # this while loop accounts for gaps in the underlying data
+    while ==(Bool, typeof(slice))
+      slice = slice_dataframe_by_time_interval(
+        data, 
+        time_field, 
+        data[i, time_field], 
+        data[i, time_field] + interval
+      )
+      interval += base_interval
+      if <(last_time, data[i, time_field] + interval)
+        return converted
+      end
     end
-    slice = slice_dataframe_by_time_interval(data, time_field, data[i, time_field], data[i, time_field]+interval)
-    if slice
-      row = slice[begin, :]
-      row[:open] = slice[begin, :open]
-      row[:high] = max(slice[:, :high]...)
-      row[:low] = min(slice[:, :low]...)
-      row[:close] = slice[end, :close]
-      row[time_field] = slice[end, time_field]
-      push!(converted, row)
-      i = nrow(slice) + 1
-    else
+    row = slice[begin, :]
+    row[time_field] = slice[begin, time_field]
+    row[:open] = slice[begin, :open]
+    row[:high] = max(slice[:, :high]...)
+    row[:low] = min(slice[:, :low]...)
+    row[:close] = slice[end, :close]
+    row[:volume] = sum(slice[:, :volume])
+    push!(converted, row)
+    i += nrow(slice)
+    if <(nrow(data), i)
       return converted
     end
   end
@@ -507,23 +519,45 @@ end
 
 function convert_realtime_to_ohlc(data::DataFrame, time_field::String, value_field::String; destination::OHLCInterval=OHLCInterval(1, "m"))
   converted = empty(data)
-  interval = get_ohlc_interval_method(destination)
+  # new fields
+  insertcols!(
+    converted, 
+    :open=>0.0, 
+    :high=>0.0, 
+    :low=>0.0, 
+    :close=>0.0,
+  )
+  # get rid of field being converted to OHLC
+  select!(converted, Not(value_field))
+  base_interval = get_ohlc_interval_method(destination)
   i = 1
   while true
-    if <(nrow(data), i)
-      return converted
+    slice = false
+    interval = base_interval
+    last_time = data[end, time_field]
+    # this while loop accounts for gaps in the underlying data
+    while ==(Bool, typeof(slice))
+      slice = slice_dataframe_by_time_interval(
+        data, 
+        time_field, 
+        data[i, time_field], 
+        data[i, time_field] + interval
+      )
+      interval += base_interval
+      if <(last_time, data[i, time_field] + interval)
+        return converted
+      end
     end
-    slice = slice_dataframe_by_time_interval(data, time_field, data[i, time_field], data[i, time_field]+interval)
-    if slice
-      row = slice[begin, :]
-      row[:open] = slice[begin, value_field]
-      row[:high] = max(slice[:, value_field]...)
-      row[:low] = min(slice[:, value_field]...)
-      row[:close] = slice[end, value_field]
-      row[time_field] = slice[end, time_field]
-      push!(converted, row)
-      i = nrow(slice) + 1
-    else
+    row = Dict()
+    row[time_field] = slice[begin, time_field]
+    row["open"] = slice[begin, value_field]
+    row["high"] = max(slice[:, value_field]...)
+    row["low"] = min(slice[:, value_field]...)
+    row["close"] = slice[end, value_field]
+    row["volume"] = sum(slice[:, :volume])
+    push!(converted, row)
+    i += nrow(slice)
+    if <(nrow(data), i)
       return converted
     end
   end
