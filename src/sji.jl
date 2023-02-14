@@ -527,8 +527,6 @@ function convert_realtime_to_ohlc(data::DataFrame, time_field::String, value_fie
     :low=>0.0, 
     :close=>0.0,
   )
-  # get rid of field being converted to OHLC
-  select!(converted, Not(value_field))
   base_interval = get_ohlc_interval_method(destination)
   i = 1
   while true
@@ -549,6 +547,7 @@ function convert_realtime_to_ohlc(data::DataFrame, time_field::String, value_fie
       end
     end
     row = Dict()
+    row[value_field] = slice[begin, value_field]
     row[time_field] = slice[begin, time_field]
     row["open"] = slice[begin, value_field]
     row["high"] = max(slice[:, value_field]...)
