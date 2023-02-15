@@ -547,8 +547,8 @@ function convert_realtime_to_ohlc(data::DataFrame, time_field::String, value_fie
       end
     end
     row = Dict()
-    row[value_field] = slice[begin, value_field]
-    row[time_field] = slice[begin, time_field]
+    row[value_field] = slice[end, value_field]
+    row[time_field] = slice[end, time_field]
     row["open"] = slice[begin, value_field]
     row["high"] = max(slice[:, value_field]...)
     row["low"] = min(slice[:, value_field]...)
