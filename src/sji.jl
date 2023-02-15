@@ -519,14 +519,6 @@ end
 
 function convert_realtime_to_ohlc(data::DataFrame, time_field::String, value_field::String; destination::OHLCInterval=OHLCInterval(1, "m"))
   converted = empty(data)
-  # new fields
-  insertcols!(
-    converted, 
-    :open=>0.0, 
-    :high=>0.0, 
-    :low=>0.0, 
-    :close=>0.0,
-  )
   base_interval = get_ohlc_interval_method(destination)
   i = 1
   while true
@@ -553,8 +545,6 @@ function convert_realtime_to_ohlc(data::DataFrame, time_field::String, value_fie
     row["high"] = max(slice[:, value_field]...)
     row["low"] = min(slice[:, value_field]...)
     row["close"] = slice[end, value_field]
-    println(converted)
-    println(row)
     push!(converted, row)
     i += nrow(slice)
     if <(nrow(data), i)
