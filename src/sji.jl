@@ -517,7 +517,7 @@ function convert_ohlc_interval(data::DataFrame, time_field::String, destination:
   end
 end
 
-function convert_realtime_to_ohlc(data::DataFrame, time_field::String, value_field::String; destination::OHLCInterval=OHLCInterval(1, "m"))
+function convert_realtime_to_ohlc(data::DataFrame, fields::Vector, metrics::Dict, time_field::String, value_field::String; destination::OHLCInterval=OHLCInterval(1, "m"))
   converted = empty(data)
   base_interval = get_ohlc_interval_method(destination)
   i = 1
@@ -541,10 +541,17 @@ function convert_realtime_to_ohlc(data::DataFrame, time_field::String, value_fie
     row = Dict()
     row[value_field] = slice[end, value_field]
     row[time_field] = slice[end, time_field]
+    row["graph"] = Dates.datetime2epochms(row[time_field])  # all datasets will have a graph field derived from a DateTime field
     row["open"] = slice[begin, value_field]
     row["high"] = max(slice[:, value_field]...)
     row["low"] = min(slice[:, value_field]...)
     row["close"] = slice[end, value_field]
+    if ==(true, haskey(fields, "volume"))
+      row["volume"] = sum(slice[:, "volume"])
+    end
+    for metric ∈ keys(metrics)
+      row[metric] = 0.0
+    end
     push!(converted, row)
     i += nrow(slice)
     if <(nrow(data), i)
