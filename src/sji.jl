@@ -546,7 +546,7 @@ function convert_realtime_to_ohlc(data::DataFrame, fields::Array, metrics::Dict,
     row["high"] = max(slice[:, value_field]...)
     row["low"] = min(slice[:, value_field]...)
     row["close"] = slice[end, value_field]
-    if ==(true, haskey(fields, "volume"))
+    if ⊆("volume", fields)
       row["volume"] = sum(slice[:, "volume"])
     end
     for metric ∈ keys(metrics)
