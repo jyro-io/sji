@@ -546,7 +546,7 @@ function convert_realtime_to_ohlc(data::DataFrame, fields::Array, metrics::Dict,
     row["high"] = max(slice[:, value_field]...)
     row["low"] = min(slice[:, value_field]...)
     row["close"] = slice[end, value_field]
-    if ⊆("volume", fields)
+    if ⊆(["volume"], fields)
       row["volume"] = sum(slice[:, "volume"])
     end
     for metric ∈ keys(metrics)
@@ -558,6 +558,35 @@ function convert_realtime_to_ohlc(data::DataFrame, fields::Array, metrics::Dict,
       return converted
     end
   end
+end
+
+function make_row(time_field::String, timestamp_format::String, fields::Vector, record)
+  row = Dict()
+  # loop over configured fields,
+  # which correspond to fields in data source
+  for field in fields
+    if ==(true, haskey(record, field))
+      # convert timestamps to DateTime
+      if ==(field, time_field)
+        if ==(typeof(record[field]), Int64)
+          row["graph"] = Float64(record[field])
+          row[field] = unix2datetime(record[field]/1000)  # TODO: surely there's a better way
+        elseif ==(typeof(record[field]), DateTime)
+          row[field] = record[field]
+          row["graph"] = datetime2unix(record[field])
+        elseif ==(typeof(record[field]), String)
+          row[field] = DateTime(record[field], DateFormat(timestamp_format))
+          row["graph"] = datetime2unix(row[field])
+        else
+          println("field type unaccounted for: typeof(record[field]) record[field]: ", string(typeof(record[field])), " ", string(record[field]))
+          return false
+        end
+      else
+        row[field] = record[field]
+      end
+    end
+  end
+  return row
 end
 
 export Socrates
