@@ -481,7 +481,7 @@ function get_ohlc_interval_method(destination::OHLCInterval)
   return method
 end
 
-function convert_ohlc_interval(data::DataFrame, time_field::String, destination::OHLCInterval)
+function convert_ohlc_interval(data::DataFrame, time_field::String, fields::Array, destination::OHLCInterval)
   converted = empty(data)
   base_interval = get_ohlc_interval_method(destination)
   i = 1
@@ -504,11 +504,13 @@ function convert_ohlc_interval(data::DataFrame, time_field::String, destination:
     end
     row = slice[begin, :]
     row[time_field] = slice[begin, time_field]
-    row[:open] = slice[begin, :open]
-    row[:high] = max(slice[:, :high]...)
-    row[:low] = min(slice[:, :low]...)
-    row[:close] = slice[end, :close]
-    row[:volume] = sum(slice[:, :volume])
+    row["open"] = slice[begin, :open]
+    row["high"] = max(slice[:, :high]...)
+    row["low"] = min(slice[:, :low]...)
+    row["close"] = slice[end, :close]
+    if ⊆(["volume"], fields)
+      row["volume"] = sum(slice[:, "volume"])
+    end
     push!(converted, row)
     i += nrow(slice)
     if <(nrow(data), i)
