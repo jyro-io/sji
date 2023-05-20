@@ -1,3 +1,7 @@
+### 4.4.0
+
+* mbedtls -> openssl
+
 ### 4.3.0
 
 * added convert_realtime_to_ohlc method
