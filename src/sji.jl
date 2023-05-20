@@ -4,7 +4,6 @@ module sji
 using Parameters
 using JSON
 using HTTP
-using MbedTLS
 using Dates
 using Mongoc
 using DataFrames
@@ -29,13 +28,10 @@ include("metrics.jl")
   username::String
   password::String
   verify::Bool = true
-  conf::SSLConfig = MbedTLS.SSLConfig(verify)
   headers::Array = ["Content-Type" => "application/json"]
   debug::Int32 = 1
 
-  function Socrates(protocol, host, username, password, verify, conf, headers, debug)
-    MbedTLS.set_dbg_level(debug)
-    MbedTLS.ssl_conf_renegotiation!(conf, MbedTLS.MBEDTLS_SSL_RENEGOTIATION_ENABLED)
+  function Socrates(protocol, host, username, password, verify, headers, debug)
     url = protocol*"://"*host*"/auth"
     params = Dict{String,String}(
       "username"=>username,
@@ -47,8 +43,7 @@ include("metrics.jl")
       JSON.json(params),
       require_ssl_verification = verify,
       readtimeout = 5,
-      retries = 1,
-      sslconfig = conf
+      retries = 1
     )
     response = JSON.parse(String(r.body))::Dict
     if r.status == 200
@@ -56,7 +51,7 @@ include("metrics.jl")
     else
       error("failed to get token: return code: "*string(r.status)*", expected 200: response: "*response)
     end
-    new(protocol, host, username, password, verify, conf, headers, debug)
+    new(protocol, host, username, password, verify, headers, debug)
   end
 end
 
@@ -85,7 +80,6 @@ function push_raw_data(c::Socrates, name::String, records::Array)::SocratesRespo
     c.headers,
     params,
     require_ssl_verification = c.verify,
-    sslconfig = c.conf
   )
   response = JSON.parse(String(r.body))
   if r.status == 200
@@ -126,7 +120,6 @@ function get_raw_data(c::Socrates, name::String, time_start, time_end; key=nothi
     c.headers,
     JSON.json(params),
     require_ssl_verification = c.verify,
-    sslconfig = c.conf
   )
   response = JSON.parse(String(r.body))
   if r.status == 200
@@ -157,7 +150,6 @@ function get_definition(c::Socrates, api::String, api_module::String, name::Stri
     c.headers,
     JSON.json(params),
     require_ssl_verification = c.verify,
-    sslconfig = c.conf
   )
   response = JSON.parse(String(r.body))
   if r.status == 200
@@ -188,7 +180,6 @@ function get_iteration_set(c::Socrates, name::String, datasource::String)::Socra
     c.headers,
     JSON.json(params),
     require_ssl_verification = c.verify,
-    sslconfig = c.conf
   )
   response = JSON.parse(String(r.body))
   if r.status == 200
@@ -213,7 +204,6 @@ function push_to_scrapeindex(c::Socrates, record::Dict)::SocratesResponse
     c.headers,
     JSON.json(record),
     require_ssl_verification = c.verify,
-    sslconfig = c.conf
   )
   response = JSON.parse(String(r.body))
   if r.status == 200
@@ -243,7 +233,6 @@ function get_unreviewed_index_records(c::Socrates, name::String, datasource::Str
     c.headers,
     JSON.json(params),
     require_ssl_verification = c.verify,
-    sslconfig = c.conf
   )
   response = JSON.parse(String(r.body))
   if r.status == 200
@@ -273,7 +262,6 @@ function get_config(c::Socrates, api::String, key::String)::SocratesResponse
     c.headers,
     JSON.json(params),
     require_ssl_verification = c.verify,
-    sslconfig = c.conf
   )
   response = JSON.parse(String(r.body))
   if r.status == 200
@@ -305,7 +293,6 @@ function update_config(c::Socrates, api::String, key::String, config::Dict)::Soc
     c.headers,
     JSON.json(params),
     require_ssl_verification = c.verify,
-    sslconfig = c.conf
   )
   response = JSON.parse(String(r.body))
   if r.status == 200
