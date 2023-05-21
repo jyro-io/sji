@@ -578,6 +578,27 @@ function make_row(time_field::String, timestamp_format::String, fields::Vector, 
   return row
 end
 
+# some metrics have configurable long time periods,
+# this function returns the longest metric period
+# in order to ensure queries get enough data
+# to calculate the metric correctly
+function get_longest_metric_period(datasource::Dict)::Int64
+  metric_list = ["sma"]
+  longest = 0
+  for op in datasource["metadata"]["etl"]
+    if ==("metric", op["operation"])
+      if ∈(op["name"], metric_list)
+        for period in op["parameters"]["periods"]
+          if <(longest, period)
+            longest = period
+          end
+        end
+      end
+    end
+  end
+  return longest
+end
+
 export Socrates
 export SocratesResponse
 export push_raw_data
@@ -596,5 +617,6 @@ export etl
 export slice_dataframe_by_time_interval
 export convert_ohlc_interval
 export convert_realtime_to_ohlc
+export get_longest_metric_period
 
 end # module

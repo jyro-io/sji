@@ -1,3 +1,7 @@
+### 4.4.1
+
+* feature: add get_longest_metric_period
+
 ### 4.4.0
 
 * mbedtls -> openssl
