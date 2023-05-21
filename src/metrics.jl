@@ -38,9 +38,10 @@ function simple_moving_average(p::Dict, data::DataFrame, prune::Bool=true)
     pf = "sma_"*string(period)  # period field
     # find the period size for this dataset
     ps = 0
+    period_offset = data[begin, p["time_field"]] + Dates.Day(period)
     for (index, row) ∈ enumerate(eachrow(data))
       row[p["time_field"]]::DateTime
-      if >=(row[p["time_field"]], data[begin, p["time_field"]] + Dates.Day(period))
+      if >=(row[p["time_field"]], period_offset)
         ps = index  # period size
         break
       end
