@@ -643,7 +643,7 @@ function simple_moving_average(p::Dict, data::DataFrame, prune::Bool=true)
       )
       if slice
         psize = nrow(slice)  # current period size
-        data[pe, pf] = sum(data[pstart:pst+psize, p["data_field"]]) / ps
+        data[pe, pf] = sum(slice[begin:end, p["data_field"]]) / psize
         pstart += 1  # increment current period start index
       else
         break
