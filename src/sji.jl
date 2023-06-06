@@ -8,8 +8,6 @@ using Dates
 using Mongoc
 using DataFrames
 
-include("metrics.jl")
-
 @with_kw struct Socrates
   #=
   Construct an authenticated Socrates client
@@ -597,6 +595,74 @@ function get_longest_metric_period(datasource::Dict)::Int64
     end
   end
   return longest
+end
+
+# TODO: this can definitely be done more elegantly - I think :symbols is probably it
+# map string input to algorithm call for
+# DataFrameRow inputs
+function calc_metric(m::String, p::Dict, r::DataFrameRow)::Float64
+  if m == "weighted_average"
+    return weighted_average(p, r)
+  elseif m == "bid_ask_spread"
+    return bid_ask_spread(p, r)
+  end
+end
+
+function weighted_average(p::Dict, r::DataFrameRow)::Float64
+  t = 0.0
+  for k ∈ keys(p)
+    t = t+(r[k]*p[k])
+  end
+  return round(t/sum(values(p)); digits=2)
+end
+
+function bid_ask_spread(p::Dict, r::DataFrameRow)::Float64
+  return round(r[p["top"]]-r["bottom"]; digits=2)
+end
+
+function average(x::Float64, y::Float64)::Float64
+  return round((x+y)/2; digits=2)
+end
+
+# TODO: generalize to arbitrary intervals,
+#       currently only days are supported.
+function simple_moving_average(p::Dict, data::DataFrame, prune::Bool=true)
+  # calculate SMA
+  for period ∈ p["periods"]
+    pf = "sma_"*string(period)  # period field
+    # calculate SMA
+    size = nrow(data)
+    # while period start index is greater than size of dataset
+    while >(pstart, size)
+      slice = slice_dataframe_by_time_interval(
+        data, 
+        p["time_field"], 
+        data[pstart, p["time_field"]] - Dates.Day(period), 
+        data[pstart, p["time_field"]]
+      )
+      if slice
+        psize = nrow(slice)  # current period size
+        data[pe, pf] = sum(data[pstart:pst+psize, p["data_field"]]) / ps
+        pstart += 1  # increment current period start index
+      else
+        break
+      end
+    end
+  end
+  if prune
+    for period ∈ p["periods"]
+      pf = "sma_"*string(period)
+      # remove invalid values
+      indexes = []
+      for (index, row) ∈ enumerate(eachrow(data))
+        if ==(0.0, row[pf])
+          append!(indexes, index)
+        end
+      end
+      delete!(data, indexes)
+    end
+  end
+  return data
 end
 
 export Socrates

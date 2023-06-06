@@ -1,3 +1,8 @@
+### 4.4.2
+
+* refactor: update simple_moving_average to use slice_dataframe_by_time_interval
+* refactor: move metrics.jl into sji.jl
+
 ### 4.4.1
 
 * feature: add get_longest_metric_period
