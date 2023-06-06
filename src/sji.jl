@@ -634,7 +634,7 @@ function simple_moving_average(p::Dict, data::DataFrame, prune::Bool=true)
     size = nrow(data)
     pstart = 1
     # while period start index is greater than size of dataset
-    while >(pstart, size)
+    while <=(pstart, size)
       slice = slice_dataframe_by_time_interval(
         data, 
         p["time_field"], 
