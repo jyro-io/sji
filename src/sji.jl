@@ -632,6 +632,7 @@ function simple_moving_average(p::Dict, data::DataFrame, prune::Bool=true)
     pf = "sma_"*string(period)  # period field
     # calculate SMA
     size = nrow(data)
+    pstart = 1
     # while period start index is greater than size of dataset
     while >(pstart, size)
       slice = slice_dataframe_by_time_interval(
