@@ -576,7 +576,7 @@ function make_row(time_field::String, timestamp_format::String, fields::Vector, 
   return row
 end
 
-# some metrics have configurable long time periods,
+# some metrics have configurable time periods,
 # this function returns the longest metric period
 # in order to ensure queries get enough data
 # to calculate the metric correctly
@@ -597,9 +597,49 @@ function get_longest_metric_period(datasource::Dict)::Int64
   return longest
 end
 
-# TODO: this can definitely be done more elegantly - I think :symbols is probably it
-# map string input to algorithm call for
-# DataFrameRow inputs
+# TODO: generalize to arbitrary intervals,
+#       currently only days are supported.
+function simple_moving_average(p::Dict, data::DataFrame, prune::Bool=true)
+  # select configured period
+  for period ∈ p["periods"]
+    pf = "sma_"*string(period)  # period field
+    # calculate SMA
+    pstart = nrow(data)
+    while <=(1, pstart)
+      println(data[pstart, p["time_field"]] - Dates.Day(period))
+      println(data[pstart, p["time_field"]])
+      slice = slice_dataframe_by_time_interval(
+        data, 
+        p["time_field"], 
+        data[pstart, p["time_field"]] - Dates.Day(period), 
+        data[pstart, p["time_field"]]
+      )
+      if !=(false, slice)
+        data[pstart, pf] = sum(slice[begin:end, p["data_field"]]) / nrow(slice)
+        pstart -= 1  # decrement current period start index
+      else
+        break
+      end
+    end
+  end
+  if prune
+    for period ∈ p["periods"]
+      pf = "sma_"*string(period)
+      # remove invalid values
+      indexes = []
+      for (index, row) ∈ enumerate(eachrow(data))
+        if ==(0.0, row[pf])
+          append!(indexes, index)
+        end
+      end
+      delete!(data, indexes)
+    end
+  end
+  return data
+end
+
+# map string input to algorithm call for DataFrameRow inputs
+# TODO: this can definitely be done more elegantly
 function calc_metric(m::String, p::Dict, r::DataFrameRow)::Float64
   if m == "weighted_average"
     return weighted_average(p, r)
@@ -622,48 +662,6 @@ end
 
 function average(x::Float64, y::Float64)::Float64
   return round((x+y)/2; digits=2)
-end
-
-# TODO: generalize to arbitrary intervals,
-#       currently only days are supported.
-function simple_moving_average(p::Dict, data::DataFrame, prune::Bool=true)
-  # calculate SMA
-  for period ∈ p["periods"]
-    pf = "sma_"*string(period)  # period field
-    # calculate SMA
-    size = nrow(data)
-    pstart = 1
-    # while period start index is greater than size of dataset
-    while <=(pstart, size)
-      slice = slice_dataframe_by_time_interval(
-        data, 
-        p["time_field"], 
-        data[pstart, p["time_field"]] - Dates.Day(period), 
-        data[pstart, p["time_field"]]
-      )
-      if slice
-        psize = nrow(slice)  # current period size
-        data[pe, pf] = sum(slice[begin:end, p["data_field"]]) / psize
-        pstart += 1  # increment current period start index
-      else
-        break
-      end
-    end
-  end
-  if prune
-    for period ∈ p["periods"]
-      pf = "sma_"*string(period)
-      # remove invalid values
-      indexes = []
-      for (index, row) ∈ enumerate(eachrow(data))
-        if ==(0.0, row[pf])
-          append!(indexes, index)
-        end
-      end
-      delete!(data, indexes)
-    end
-  end
-  return data
 end
 
 export Socrates
