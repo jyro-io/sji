@@ -606,8 +606,6 @@ function simple_moving_average(p::Dict, data::DataFrame, prune::Bool=true)
     # calculate SMA
     pstart = nrow(data)
     while <=(1, pstart)
-      println(data[pstart, p["time_field"]] - Dates.Day(period))
-      println(data[pstart, p["time_field"]])
       slice = slice_dataframe_by_time_interval(
         data, 
         p["time_field"], 
