@@ -1,3 +1,7 @@
+### 4.5.0
+
+* refactor: get_ohlc_interval_method -> get_ohlc_interval
+
 ### 4.4.2
 
 * refactor: update simple_moving_average to use slice_dataframe_by_time_interval

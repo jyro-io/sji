@@ -453,17 +453,17 @@ struct OHLCInterval
   unit::String
 end
 
-function get_ohlc_interval_method(destination::OHLCInterval)
+function get_ohlc_interval(destination::OHLCInterval)
   if ==("m", destination.unit)
-    method = Dates.Minute(destination.interval)
+    interval = Dates.Minute(destination.interval)
   elseif ==("h", destination.unit)
-    method = Dates.Hour(destination.interval)
+    interval = Dates.Hour(destination.interval)
   elseif ==("d", destination.unit)
-    method = Dates.Day(destination.interval)
+    interval = Dates.Day(destination.interval)
   else
     error("invalid unit, expecting [m,h,d]")
   end
-  return method
+  return interval
 end
 
 function convert_ohlc_interval(data::DataFrame, time_field::String, fields::Array, destination::OHLCInterval)
