@@ -468,7 +468,7 @@ end
 
 function convert_ohlc_interval(data::DataFrame, time_field::String, fields::Array, destination::OHLCInterval)
   converted = empty(data)
-  base_interval = get_ohlc_interval_method(destination)
+  base_interval = get_ohlc_interval(destination)
   i = 1
   while true
     slice = false
@@ -506,7 +506,7 @@ end
 
 function convert_realtime_to_ohlc(data::DataFrame, fields::Array, metrics::Dict, time_field::String, value_field::String; destination::OHLCInterval=OHLCInterval(1, "m"))
   converted = empty(data)
-  base_interval = get_ohlc_interval_method(destination)
+  base_interval = get_ohlc_interval(destination)
   i = 1
   while true
     slice = false
