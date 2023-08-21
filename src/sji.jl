@@ -22,7 +22,7 @@ using DataFrames
   =#
 
   protocol::String = "https"
-  host::String = "api.jyro.io"
+  host::String = "api.jyro-io.ddns.net"
   username::String
   password::String
   verify::Bool = true
@@ -56,6 +56,36 @@ end
 struct SocratesResponse
   status::Bool
   response
+end
+
+function get_predictive_model(c::Socrates, datasource::String, definition::String)::SocratesResponse
+  #=
+  Get a trained predictive model for a (datasource, pattern) pair from Archimedes
+
+  positional arguments:
+    c <Socrates> client type
+    datasource <String> datasource name
+    definition <String> scraper definition name
+  =#
+
+  url = c.protocol*"://"*c.host*"/archimedes/model"
+  params = Dict{String,String}(
+    "operation"=>"get",
+    "datasource"=>datasource,
+    "definition"=>definition
+  )
+  r = HTTP.post(
+    url,
+    c.headers,
+    JSON.json(params),
+    require_ssl_verification = c.verify,
+  )
+  response = JSON.parse(String(r.body))
+  if r.status == 200
+    return SocratesResponse(true, response::Dict)
+  else
+    return SocratesResponse(false, response::Dict)
+  end
 end
 
 function push_raw_data(c::Socrates, name::String, records::Array)::SocratesResponse

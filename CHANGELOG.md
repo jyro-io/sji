@@ -1,3 +1,7 @@
+### 4.6.0
+
+* feature: add get_predictive_model
+
 ### 4.5.0
 
 * refactor: get_ohlc_interval_method -> get_ohlc_interval
