@@ -88,6 +88,45 @@ function get_predictive_model(c::Socrates, datasource::String, definition::Strin
   end
 end
 
+function update_predictive_model(c::Socrates, datasource::String, definition::String, model::String)::SocratesResponse
+  #=
+  add/update predictive model
+
+  positional arguments:
+    c <Socrates> client type
+    datasource <String> datasource name
+    definition <String> scraper definition name
+    model <String> model -> BSON -> string
+  =#
+
+  # check for existing model
+  if get_predictive_model(c, datasource, definition).status
+    operation = "update"
+  else
+    operation = "add"
+  end
+
+  url = c.protocol*"://"*c.host*"/archimedes/model"
+  params = Dict{String,String}(
+    "operation"=>operation,
+    "datasource"=>datasource,
+    "definition"=>definition,
+    "model"=>model
+  )
+  r = HTTP.post(
+    url,
+    c.headers,
+    JSON.json(params),
+    require_ssl_verification = c.verify,
+  )
+  response = JSON.parse(String(r.body))
+  if r.status == 200
+    return SocratesResponse(true, response::Dict)
+  else
+    return SocratesResponse(false, response::Dict)
+  end
+end
+
 function push_raw_data(c::Socrates, name::String, records::Array)::SocratesResponse
   #=
   Push raw data to Socrates

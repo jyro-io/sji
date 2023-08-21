@@ -1,6 +1,7 @@
 ### 4.6.0
 
 * feature: add get_predictive_model
+* feature: add update_predictive_model
 
 ### 4.5.0
 
