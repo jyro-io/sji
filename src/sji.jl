@@ -475,12 +475,12 @@ function get_metadata(datasource::Dict, scraper_definition::Dict)::SocratesRespo
   return SocratesResponse(true, (metrics, fields))
 end
 
-function etl(datasource::Dict, data::DataFrame; prune::Bool=true)
+function etl!(datasource::Dict, data::DataFrame; prune::Bool=true)
   if ==(haskey(datasource["metadata"], "etl"), true)
     for op in datasource["metadata"]["etl"]
       if ==(op["operation"], "metric")
         if ==(op["name"], "sma")
-          data = simple_moving_average(op["parameters"], data, prune)
+          data = simple_moving_average!(op["parameters"], data, prune)
           if ==(false, data)
             return false
           end
@@ -668,7 +668,7 @@ end
 
 # TODO: generalize to arbitrary intervals,
 #       currently only days are supported.
-function simple_moving_average(p::Dict, data::DataFrame, prune::Bool=true)
+function simple_moving_average!(p::Dict, data::DataFrame, prune::Bool=true)
   # select configured period
   for period ∈ p["periods"]
     pf = "sma_"*string(period)  # period field

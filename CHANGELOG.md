@@ -1,3 +1,7 @@
+### 4.7.0
+
+* refactor: add mutation notation to functions
+
 ### 4.6.0
 
 * feature: add get_predictive_model
