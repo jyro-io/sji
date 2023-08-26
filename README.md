@@ -9,10 +9,6 @@ This package provides an interface where those versed in Julia
 can hit the ground running. It defines functions that abstract 
 many simpler operations into a more human-friendly workflow.
 
-### Requirements
-
-This package supports Julia 1.8.5
-
 #### Installation
 
 This package should not be considered stable yet
