@@ -11,8 +11,6 @@ many simpler operations into a more human-friendly workflow.
 
 #### Installation
 
-This package should not be considered stable yet
-
 ```bash
 pkg> add git@github.com:jyro-io/sji.git
 ```
