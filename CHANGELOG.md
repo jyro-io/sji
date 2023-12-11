@@ -1,3 +1,8 @@
+### 4.7.1
+
+* bugfix: problem in convert_realtime_to_ohlc where the input dataframe
+          does not match what output dataframe should be.
+
 ### 4.7.0
 
 * refactor: add mutation notation to functions
