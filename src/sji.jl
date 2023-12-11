@@ -478,13 +478,23 @@ end
 function etl!(datasource::Dict, data::DataFrame; prune::Bool=true)
   if ==(haskey(datasource["metadata"], "etl"), true)
     for op in datasource["metadata"]["etl"]
-      if ==(op["operation"], "metric")
+      if ==(op["operation"], "ohlc")
+        data = convert_to_ohlc(
+          data,
+          op["parameters"]["time_field"],
+          op["parameters"]["data_field"],
+        )
+      elseif ==(op["operation"], "metric")
         if ==(op["name"], "sma")
           data = simple_moving_average!(op["parameters"], data, prune)
           if ==(false, data)
             return false
           end
         else
+          # check for metric column and create
+          if !hasproperty(data, op["name"])
+            data[!, op["name"]] = fill(0.0, nrow(data))
+          end
           for (i, d) in enumerate(eachrow(data))
             data[i, op["name"]] = calc_metric(op["name"], op["parameters"], d)
           end
@@ -573,7 +583,7 @@ function convert_ohlc_interval(data::DataFrame, time_field::String, fields::Arra
   end
 end
 
-function convert_realtime_to_ohlc(data::DataFrame, fields::Array, metrics::Dict, time_field::String, value_field::String; destination::OHLCInterval=OHLCInterval(1, "m"))
+function convert_to_ohlc(data::DataFrame, time_field::String, data_field::String; metrics::Dict, destination::OHLCInterval=OHLCInterval(1, "m"))
   converted = nothing
   base_interval = get_ohlc_interval(destination)
   i = 1
@@ -585,8 +595,8 @@ function convert_realtime_to_ohlc(data::DataFrame, fields::Array, metrics::Dict,
     while ==(Bool, typeof(slice))
       slice = slice_dataframe_by_time_interval(
         data, 
-        time_field, 
-        data[i, time_field], 
+        time_field,
+        data[i, time_field],
         data[i, time_field] + interval
       )
 
@@ -597,14 +607,13 @@ function convert_realtime_to_ohlc(data::DataFrame, fields::Array, metrics::Dict,
     end
 
     row = Dict()
-    row[value_field] = slice[end, value_field]
     row[time_field] = slice[end, time_field]
     row["graph"] = Dates.datetime2epochms(row[time_field])  # all datasets will have a graph field derived from a DateTime field
-    row["open"] = slice[begin, value_field]
-    row["high"] = max(slice[:, value_field]...)
-    row["low"] = min(slice[:, value_field]...)
-    row["close"] = slice[end, value_field]
-    if ⊆(["volume"], fields)
+    row["open"] = slice[begin, data_field]
+    row["high"] = max(slice[:, data_field]...)
+    row["low"] = min(slice[:, data_field]...)
+    row["close"] = slice[end, data_field]
+    if ⊆(["volume"], names(data))
       row["volume"] = sum(slice[:, "volume"])
     end
     for metric ∈ keys(metrics)
@@ -713,7 +722,7 @@ function simple_moving_average!(p::Dict, data::DataFrame, prune::Bool=true)
 end
 
 # map string input to algorithm call for DataFrameRow inputs
-# TODO: this can definitely be done more elegantly
+# TODO: this can probably be done more elegantly
 function calc_metric(m::String, p::Dict, r::DataFrameRow)::Float64
   if m == "weighted_average"
     return weighted_average(p, r)

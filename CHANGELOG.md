@@ -1,3 +1,9 @@
+### 4.7.2
+
+* convert_realtime_to_ohlc -> convert_to_ohlc
+* generalize convert_to_ohlc slightly so that it fits into ETL workflow
+  instead of standing alone
+
 ### 4.7.1
 
 * bugfix: problem in convert_realtime_to_ohlc where the input dataframe
