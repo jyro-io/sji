@@ -461,9 +461,11 @@ function get_metadata(datasource::Dict, scraper_definition::Dict)::SocratesRespo
   # split SMA into constituent metrics according to configured periods
   if haskey(metrics, "sma")
     for op in datasource["metadata"]["etl"]
-      if ==(op["name"], "sma")
-        for period in op["parameters"]["periods"]
-          metrics["sma_"*string(period)] = op["parameters"]
+      if ==(op["operation"], "metric")
+        if ==(op["name"], "sma")
+          for period in op["parameters"]["periods"]
+            metrics["sma_"*string(period)] = op["parameters"]
+          end
         end
       end
     end
@@ -475,7 +477,7 @@ function get_metadata(datasource::Dict, scraper_definition::Dict)::SocratesRespo
   return SocratesResponse(true, (metrics, fields))
 end
 
-function etl!(datasource::Dict, data::DataFrame; prune::Bool=true)
+function etl!(datasource::Dict, metrics::Dict, data::DataFrame; prune::Bool=true)
   if ==(haskey(datasource["metadata"], "etl"), true)
     for op in datasource["metadata"]["etl"]
       if ==(op["operation"], "ohlc")
@@ -483,6 +485,7 @@ function etl!(datasource::Dict, data::DataFrame; prune::Bool=true)
           data,
           op["parameters"]["time_field"],
           op["parameters"]["data_field"],
+          metrics,
         )
       elseif ==(op["operation"], "metric")
         if ==(op["name"], "sma")
@@ -583,7 +586,7 @@ function convert_ohlc_interval(data::DataFrame, time_field::String, fields::Arra
   end
 end
 
-function convert_to_ohlc(data::DataFrame, time_field::String, data_field::String; metrics::Dict, destination::OHLCInterval=OHLCInterval(1, "m"))
+function convert_to_ohlc(data::DataFrame, time_field::String, data_field::String, metrics::Dict, destination::OHLCInterval=OHLCInterval(1, "m"))
   converted = nothing
   base_interval = get_ohlc_interval(destination)
   i = 1
