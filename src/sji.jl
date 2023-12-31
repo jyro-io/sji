@@ -611,7 +611,7 @@ function convert_to_ohlc(data::DataFrame, time_field::String, data_field::String
 
     row = Dict()
     row[time_field] = slice[end, time_field]
-    row["graph"] = Dates.datetime2epochms(row[time_field])  # all datasets will have a graph field derived from a DateTime field
+    row["graph"] = Float64(Dates.datetime2epochms(row[time_field]))  # all datasets will have a graph field derived from a DateTime field
     row["open"] = slice[begin, data_field]
     row["high"] = max(slice[:, data_field]...)
     row["low"] = min(slice[:, data_field]...)
@@ -645,7 +645,8 @@ function make_row(time_field::String, timestamp_format::String, fields::Vector, 
       if ==(field, time_field)
         if ==(typeof(record[field]), Int64)
           row["graph"] = Float64(record[field])
-          row[field] = unix2datetime(record[field]/1000)  # TODO: surely there's a better way
+          # TODO: surely there's a better way than /1000
+          row[field] = unix2datetime(record[field]/1000)
         elseif ==(typeof(record[field]), DateTime)
           row[field] = record[field]
           row["graph"] = datetime2unix(record[field])
@@ -695,8 +696,8 @@ function simple_moving_average!(p::Dict, data::DataFrame, prune::Bool=true)
     pstart = nrow(data)
     while <=(1, pstart)
       slice = slice_dataframe_by_time_interval(
-        data, 
-        p["time_field"], 
+        data,
+        p["time_field"],
         data[pstart, p["time_field"]] - Dates.Day(period), 
         data[pstart, p["time_field"]]
       )
