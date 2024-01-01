@@ -3,6 +3,7 @@
 * convert_realtime_to_ohlc -> convert_to_ohlc
 * generalize convert_to_ohlc slightly so that it fits into ETL workflow
   instead of standing alone
+* remove pull_fields construct in favor of automatic field collection
 
 ### 4.7.1
 

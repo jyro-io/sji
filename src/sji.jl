@@ -445,17 +445,17 @@ function get_metadata(datasource::Dict, scraper_definition::Dict)::SocratesRespo
   for op in datasource["metadata"]["etl"]
     op::Dict
     if ==(op["operation"], "metric")
-      if ==(op["pull_fields"], true)
-        for k in keys(op["parameters"])
-          if ===(findfirst(x->x==k, fields), nothing)
-            push!(fields, k)
-          end
+      for k in keys(op["parameters"])
+        if ===(findfirst(x->x==k, fields), nothing)
+          push!(fields, k)
         end
       end
       # metrics can be used multiple times in the pipeline,
       # allowing recursive metric calculations;
       # the last one will be the final form
       metrics[op["name"]] = op["parameters"]
+    elseif ==(op["operation"], "ohlc")
+      push!(fields, op["parameters"]["data_field"])
     end
   end
   # split SMA into constituent metrics according to configured periods
@@ -640,7 +640,7 @@ function make_row(time_field::String, timestamp_format::String, fields::Vector, 
   # loop over configured fields,
   # which correspond to fields in data source
   for field in fields
-    if ==(true, haskey(record, field))
+    if haskey(record, field)
       # convert timestamps to DateTime
       if ==(field, time_field)
         if ==(typeof(record[field]), Int64)
@@ -663,6 +663,44 @@ function make_row(time_field::String, timestamp_format::String, fields::Vector, 
     end
   end
   return row
+end
+
+function push_row!(dataframe, row)
+  for field in keys(row)
+    if !hasproperty(dataframe, field)
+      dataframe[!, field] = fill(0.0, nrow(dataframe))
+    end
+  end
+  push!(dataframe, row)
+  return dataframe
+end
+
+function add_fields!(row::Dict, metrics::Dict)
+  for metric ∈ keys(metrics)
+    if !(haskey(row, metric))
+      row[metric] = 0.0
+    end
+  end
+  for field ∈ ["open", "high", "low", "close"]
+    if !(haskey(row, field))
+      row[field] = 0.0
+    end
+  end
+  return row
+end
+
+function add_fields!(dataframe::DataFrame, metrics::Dict)
+  for metric ∈ keys(metrics)
+    if !hasproperty(dataframe, metric)
+      dataframe[!, metric] = fill(0.0, nrow(dataframe))
+    end
+  end
+  for field ∈ ["open", "high", "low", "close"]
+    if !hasproperty(dataframe, field)
+      dataframe[!, field] = fill(0.0, nrow(dataframe))
+    end
+  end
+  return dataframe
 end
 
 # some metrics have configurable time periods,
