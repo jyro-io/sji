@@ -1,3 +1,7 @@
+### 4.7.3
+
+* bump version for private registry
+
 ### 4.7.2
 
 * convert_realtime_to_ohlc -> convert_to_ohlc
