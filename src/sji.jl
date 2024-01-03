@@ -560,7 +560,7 @@ function convert_ohlc_interval(data::DataFrame, time_field::String, fields::Arra
     while ==(Bool, typeof(slice))
       slice = slice_dataframe_by_time_interval(
         data, 
-        time_field, 
+        time_field,
         data[i, time_field], 
         data[i, time_field] + interval
       )
@@ -671,7 +671,7 @@ function push_row!(dataframe, row)
       dataframe[!, field] = fill(0.0, nrow(dataframe))
     end
   end
-  push!(dataframe, row)
+  push!(dataframe, row; promote=true)
   return dataframe
 end
 
@@ -730,6 +730,10 @@ function simple_moving_average!(p::Dict, data::DataFrame, prune::Bool=true)
   # select configured period
   for period ∈ p["periods"]
     pf = "sma_"*string(period)  # period field
+    # check for metric in dataframe and create
+    if !hasproperty(data, pf)
+      data[!, pf] = fill(0.0, nrow(data))
+    end
     # calculate SMA
     pstart = nrow(data)
     while <=(1, pstart)

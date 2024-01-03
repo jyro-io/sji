@@ -1,3 +1,7 @@
+### 4.7.4
+
+* add missing column during metric calculation
+
 ### 4.7.3
 
 * bump version for private registry
