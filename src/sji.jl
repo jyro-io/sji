@@ -445,16 +445,18 @@ function get_metadata(datasource::Dict, scraper_definition::Dict)::SocratesRespo
   for op in datasource["metadata"]["etl"]
     op::Dict
     if ==(op["operation"], "metric")
-      for k in keys(op["parameters"])
-        if ===(findfirst(x->x==k, fields), nothing)
-          push!(fields, k)
+      if ==(op["name"], "weighted_average")
+        for k in keys(op["parameters"])
+          if ===(findfirst(x->x==k, fields), nothing)
+            push!(fields, k)
+          end
         end
       end
       # metrics can be used multiple times in the pipeline,
       # allowing recursive metric calculations;
       # the last one will be the final form
       metrics[op["name"]] = op["parameters"]
-    elseif ==(op["operation"], "ohlc")
+    elseif ==(op["operation"], "ohlc") || ==(op["name"], "sma")
       push!(fields, op["parameters"]["data_field"])
     end
   end
