@@ -1,3 +1,7 @@
+### 4.7.5
+
+* bugfix: data field extraction in get_metadata
+
 ### 4.7.4
 
 * add missing column during metric calculation
