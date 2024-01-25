@@ -7,6 +7,7 @@ using HTTP
 using Dates
 using Mongoc
 using DataFrames
+using TimeZones
 
 @with_kw struct Socrates
   #=
