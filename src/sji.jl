@@ -655,7 +655,7 @@ function make_row(time_field::String, timestamp_format::String, fields::Vector, 
           row["graph"] = datetime2unix(record[field])
         elseif ==(typeof(record[field]), String)
           row[field] = ZonedDateTime(record[field], DateFormat(timestamp_format))
-          row["graph"] = datetime2unix(row[field])
+          row["graph"] = datetime2unix(DateTime(record[field], DateFormat(timestamp_format)))
         else
           println("field type unaccounted for: typeof(record[field]) record[field]: ", string(typeof(record[field])), " ", string(record[field]))
           return false

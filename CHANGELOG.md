@@ -1,3 +1,7 @@
+### 4.7.8
+
+* bugfix: fix graph field calculation
+
 ### 4.7.7
 
 * add ZonedDateTime call
