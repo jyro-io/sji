@@ -1,3 +1,7 @@
+### 4.7.9
+
+* bugfix: revert timezoning
+
 ### 4.7.8
 
 * bugfix: fix graph field calculation
