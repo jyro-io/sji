@@ -1,3 +1,9 @@
+### 4.8.0
+
+* add threads to SMA calculation in etl!()
+* add OHLC interval parameter to etl!()
+* various refactors
+
 ### 4.7.10
 
 * add threads to etl!()

@@ -1,6 +1,7 @@
 __precompile__(true)
 module sji
 
+using .GC
 using Parameters
 using JSON
 using HTTP
@@ -58,6 +59,11 @@ end
 struct SocratesResponse
   status::Bool
   response
+end
+
+struct OHLCInterval
+  interval::Int64
+  unit::String
 end
 
 function get_predictive_model(c::Socrates, datasource::String, definition::String)::SocratesResponse
@@ -481,7 +487,13 @@ function get_metadata(datasource::Dict, scraper_definition::Dict)::SocratesRespo
   return SocratesResponse(true, (metrics, fields))
 end
 
-function etl!(datasource::Dict, metrics::Dict, data::DataFrame; prune::Bool=true)
+function etl!(
+  datasource::Dict,
+  metrics::Dict,
+  data::DataFrame;
+  interval::OHLCInterval=OHLCInterval(1, "m"),
+  prune::Bool=true
+)
   numthreads = Threads.nthreads()
   if ==(haskey(datasource["metadata"], "etl"), true)
     for op in datasource["metadata"]["etl"]
@@ -496,19 +508,63 @@ function etl!(datasource::Dict, metrics::Dict, data::DataFrame; prune::Bool=true
             op["parameters"]["time_field"],
             op["parameters"]["data_field"],
             metrics,
+            interval
           )
         end
         data = fetch.(tasks)
-        # reduces Vector{DataFrame} to DataFrame
+        # reduce Vector{DataFrame} to DataFrame
         data = reduce(vcat, filter(x -> x !== nothing, data))
         # make sure async processing didn't return incorrect ordering
         sort!(data, datasource["timestamp_field"])
       # calculate metrics
       elseif ==(op["operation"], "metric")
         if ==(op["name"], "sma")
-          data = simple_moving_average!(op["parameters"], data, prune)
-          if ==(false, data)
-            return false
+          # convert using period per thread
+          tasks = map(op["parameters"]["periods"]) do period
+            Threads.@spawn simple_moving_average!(
+              data,
+              period,
+              op["parameters"]["data_field"],
+              op["parameters"]["time_field"],
+            )
+          end
+          # only columns are returned
+          data = fetch.(tasks)
+          # reduce Vector{DataFrame} to DataFrame
+          data = reduce(vcat, filter(x -> x !== nothing, data))
+          # make sure async processing didn't return incorrect ordering
+          sort!(data, datasource["timestamp_field"])
+          if prune
+            periods = deepcopy(op["parameters"]["periods"])
+            # remove columns where all values are zero
+            indexes = []
+            for (i, period) ∈ enumerate(periods)
+              remove = true
+              pf = "sma_"*string(period)  # period field
+              for row ∈ eachrow(data)
+                if !=(0.0, row[pf])
+                  remove = false
+                  break
+                end
+              end
+              if remove
+                select!(data, Not(pf))
+                append!(indexes, i)
+              end
+            end
+            deleteat!(periods, indexes)
+            # remove rows where any value is zero
+            indexes = []
+            for (i, row) ∈ enumerate(eachrow(data))
+              for period ∈ periods
+                pf = "sma_"*string(period)  # period field
+                if ==(0.0, row[pf])
+                  append!(indexes, i)
+                  break
+                end
+              end
+            end
+            deleteat!(data, indexes)
           end
         else
           # check for metric column and create
@@ -522,6 +578,7 @@ function etl!(datasource::Dict, metrics::Dict, data::DataFrame; prune::Bool=true
       end
     end
   end
+  GC.gc()
   return data
 end
 
@@ -547,11 +604,6 @@ function slice_dataframe_by_time_interval(data::AbstractDataFrame, field::String
   end
 end
 
-struct OHLCInterval
-  interval::Int64
-  unit::String
-end
-
 function get_ohlc_interval(destination::OHLCInterval)
   if ==("m", destination.unit)
     interval = Dates.Minute(destination.interval)
@@ -565,7 +617,12 @@ function get_ohlc_interval(destination::OHLCInterval)
   return interval
 end
 
-function convert_ohlc_interval(data::AbstractDataFrame, time_field::String, fields::Array, destination::OHLCInterval)
+function convert_ohlc_interval(
+  data::AbstractDataFrame,
+  time_field::String,
+  fields::Array,
+  destination::OHLCInterval
+)
   converted = empty(data)
   base_interval = get_ohlc_interval(destination)
   i = 1
@@ -603,7 +660,13 @@ function convert_ohlc_interval(data::AbstractDataFrame, time_field::String, fiel
   end
 end
 
-function convert_to_ohlc(data::AbstractDataFrame, time_field::String, data_field::String, metrics::Dict, destination::OHLCInterval=OHLCInterval(1, "m"))
+function convert_to_ohlc(
+  data::AbstractDataFrame,
+  time_field::String,
+  data_field::String,
+  metrics::Dict,
+  destination::OHLCInterval=OHLCInterval(1, "m")
+)
   converted = nothing
   base_interval = get_ohlc_interval(destination)
   i = 1
@@ -752,42 +815,31 @@ end
 
 # TODO: generalize to arbitrary intervals,
 #       currently only days are supported.
-function simple_moving_average!(p::Dict, data::AbstractDataFrame, prune::Bool=true)
-  # select configured period
-  for period ∈ p["periods"]
-    pf = "sma_"*string(period)  # period field
-    # check for metric in dataframe and create
-    if !hasproperty(data, pf)
-      data[!, pf] = fill(0.0, nrow(data))
-    end
-    # calculate SMA
-    pstart = nrow(data)
-    while <=(1, pstart)
-      slice = slice_dataframe_by_time_interval(
-        data,
-        p["time_field"],
-        data[pstart, p["time_field"]] - Dates.Day(period), 
-        data[pstart, p["time_field"]]
-      )
-      if !=(false, slice)
-        data[pstart, pf] = sum(slice[begin:end, p["data_field"]]) / nrow(slice)
-        pstart -= 1  # decrement current period start index
-      else
-        break
-      end
-    end
+function simple_moving_average!(
+  data::AbstractDataFrame,
+  period::Int64,
+  data_field::String,
+  time_field::String,
+)
+  pf = "sma_"*string(period)  # period field
+  # check for metric in dataframe and create
+  if !hasproperty(data, pf)
+    data[!, pf] = fill(0.0, nrow(data))
   end
-  if prune
-    for period ∈ p["periods"]
-      pf = "sma_"*string(period)
-      # remove invalid values
-      indexes = []
-      for (index, row) ∈ enumerate(eachrow(data))
-        if ==(0.0, row[pf])
-          append!(indexes, index)
-        end
-      end
-      delete!(data, indexes)
+  # calculate SMA
+  pstart = nrow(data)
+  while <=(1, pstart)
+    slice = slice_dataframe_by_time_interval(
+      data,
+      time_field,
+      data[pstart, time_field] - Dates.Day(period),
+      data[pstart, time_field]
+    )
+    if !=(false, slice)
+      data[pstart, pf] = sum(slice[begin:end, data_field]) / nrow(slice)
+      pstart -= 1  # decrement current period start index
+    else
+      break
     end
   end
   return data
