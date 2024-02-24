@@ -1,6 +1,11 @@
+### 4.7.10
+
+* add threads to etl!()
+* switch helper functions from DataFrame -> AbstractDataFrame
+
 ### 4.7.9
 
-* bugfix: revert timezoning
+* bugfix: add timezoning
 
 ### 4.7.8
 

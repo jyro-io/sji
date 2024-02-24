@@ -8,6 +8,7 @@ using Dates
 using Mongoc
 using DataFrames
 using TimeZones
+using Base.Threads
 
 @with_kw struct Socrates
   #=
@@ -481,15 +482,28 @@ function get_metadata(datasource::Dict, scraper_definition::Dict)::SocratesRespo
 end
 
 function etl!(datasource::Dict, metrics::Dict, data::DataFrame; prune::Bool=true)
+  numthreads = Threads.nthreads()
   if ==(haskey(datasource["metadata"], "etl"), true)
     for op in datasource["metadata"]["etl"]
+      # convert realtime data to OHLC
       if ==(op["operation"], "ohlc")
-        data = convert_to_ohlc(
-          data,
-          op["parameters"]["time_field"],
-          op["parameters"]["data_field"],
-          metrics,
-        )
+        # calculate chunk intervals
+        chunks = Iterators.partition(data, floor(Int, nrow(data) / numthreads))
+        # convert using interval per thread
+        tasks = map(chunks) do chunk
+          Threads.@spawn convert_to_ohlc(
+            chunk,
+            op["parameters"]["time_field"],
+            op["parameters"]["data_field"],
+            metrics,
+          )
+        end
+        data = fetch.(tasks)
+        # reduces Vector{DataFrame} to DataFrame
+        data = reduce(vcat, filter(x -> x !== nothing, data))
+        # make sure async processing didn't return incorrect ordering
+        sort!(data, datasource["timestamp_field"])
+      # calculate metrics
       elseif ==(op["operation"], "metric")
         if ==(op["name"], "sma")
           data = simple_moving_average!(op["parameters"], data, prune)
@@ -511,7 +525,7 @@ function etl!(datasource::Dict, metrics::Dict, data::DataFrame; prune::Bool=true
   return data
 end
 
-function slice_dataframe_by_time_interval(data::DataFrame, field::String, start::DateTime, stop::DateTime)
+function slice_dataframe_by_time_interval(data::AbstractDataFrame, field::String, start::DateTime, stop::DateTime)
   if >(stop, start)
     bindex = nothing
     eindex = nothing
@@ -551,7 +565,7 @@ function get_ohlc_interval(destination::OHLCInterval)
   return interval
 end
 
-function convert_ohlc_interval(data::DataFrame, time_field::String, fields::Array, destination::OHLCInterval)
+function convert_ohlc_interval(data::AbstractDataFrame, time_field::String, fields::Array, destination::OHLCInterval)
   converted = empty(data)
   base_interval = get_ohlc_interval(destination)
   i = 1
@@ -589,7 +603,7 @@ function convert_ohlc_interval(data::DataFrame, time_field::String, fields::Arra
   end
 end
 
-function convert_to_ohlc(data::DataFrame, time_field::String, data_field::String, metrics::Dict, destination::OHLCInterval=OHLCInterval(1, "m"))
+function convert_to_ohlc(data::AbstractDataFrame, time_field::String, data_field::String, metrics::Dict, destination::OHLCInterval=OHLCInterval(1, "m"))
   converted = nothing
   base_interval = get_ohlc_interval(destination)
   i = 1
@@ -701,7 +715,7 @@ function add_fields!(row::Dict, metrics::Dict)
   return row
 end
 
-function add_fields!(dataframe::DataFrame, metrics::Dict)
+function add_fields!(dataframe::AbstractDataFrame, metrics::Dict)
   for metric ∈ keys(metrics)
     if !hasproperty(dataframe, metric)
       dataframe[!, metric] = fill(0.0, nrow(dataframe))
@@ -738,7 +752,7 @@ end
 
 # TODO: generalize to arbitrary intervals,
 #       currently only days are supported.
-function simple_moving_average!(p::Dict, data::DataFrame, prune::Bool=true)
+function simple_moving_average!(p::Dict, data::AbstractDataFrame, prune::Bool=true)
   # select configured period
   for period ∈ p["periods"]
     pf = "sma_"*string(period)  # period field
