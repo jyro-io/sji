@@ -639,6 +639,15 @@ function convert_to_ohlc(data::DataFrame, time_field::String, data_field::String
 end
 
 function make_row(time_field::String, timestamp_format::String, fields::Vector, record)
+  #=
+  Create a row formatted in a standardized way for Socrates applications
+
+  positional arguments:
+    time_field <String> timestamp field name
+    timestamp_format <String> format string for parsing
+    fields <Vector> vector of datasource field names
+  =#
+
   row = Dict()
   # loop over configured fields,
   # which correspond to fields in data source
