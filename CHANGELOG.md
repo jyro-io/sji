@@ -1,3 +1,10 @@
+### 4.9.0
+
+* etl!() now handles pre-ETL interval conversion in all cases,
+  this greatly decreases etl!() processing time
+* adjust etl!() method signature
+* interval parameter is now a first-class citizen in datasource definitions
+
 ### 4.8.0
 
 * add threads to SMA calculation in etl!()

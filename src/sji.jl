@@ -488,14 +488,28 @@ function get_metadata(datasource::Dict, scraper_definition::Dict)::SocratesRespo
 end
 
 function etl!(
+  data::DataFrame,
   datasource::Dict,
-  metrics::Dict,
-  data::DataFrame;
+  fields::Array,
+  metrics::Dict;
   interval::OHLCInterval=OHLCInterval(1, "m"),
   prune::Bool=true
 )
   numthreads = Threads.nthreads()
   if ==(haskey(datasource["metadata"], "etl"), true)
+
+    # in non-realtime cases, check to see if the given interval differs from the datasource interval;
+    # if so, convert to the given interval before proceeding.
+    # realtime is excluded because it will get handled in the "ohlc" operation below.
+    if !=(datasource["interval"], "realtime") && !=(datasource["interval"], [interval.interval, interval.unit])
+      data = convert_ohlc_interval(
+        data,
+        datasource["timestamp_field"],
+        fields,
+        interval,
+      )
+    end
+
     for op in datasource["metadata"]["etl"]
       # convert realtime data to OHLC
       if ==(op["operation"], "ohlc")
@@ -534,6 +548,7 @@ function etl!(
           data = reduce(vcat, filter(x -> x !== nothing, data))
           # make sure async processing didn't return incorrect ordering
           sort!(data, datasource["timestamp_field"])
+
           if prune
             periods = deepcopy(op["parameters"]["periods"])
             # remove columns where all values are zero
@@ -654,7 +669,7 @@ function convert_ohlc_interval(
     end
     push!(converted, row)
     i += nrow(slice)
-    if <(nrow(data), i)
+    if <=(nrow(data), i)
       return converted
     end
   end
