@@ -1,3 +1,7 @@
+### 4.10.0
+
+* update get_metadata interface to make scraper_definition an optional keyword parameter
+
 ### 4.9.0
 
 * etl!() now handles pre-ETL interval conversion in all cases,

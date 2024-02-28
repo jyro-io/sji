@@ -433,21 +433,25 @@ function connect_to_datasource(s::Socrates, name::String)::Mongoc.Client
   end
 end
 
-function get_metadata(datasource::Dict, scraper_definition::Dict)::SocratesResponse
+function get_metadata(datasource::Dict; scraper_definition::Dict=Dict())::SocratesResponse
   metrics = Dict()
   fields = []
-  scraper_definition["rules"]::Array
-  # scan definition rules for fields
-  for rule in scraper_definition["rules"]
-    rule::Dict
-    if ==(haskey(rule, "field"), true)
-      if ===(typeof(rule["field"]), String)
-        if ===(findfirst(x->x==rule["field"], fields), nothing)
-          push!(fields, rule["field"])
+
+  if haskey(scraper_definition, "rules")
+    scraper_definition["rules"]::Array
+    # scan definition rules for fields
+    for rule in scraper_definition["rules"]
+      rule::Dict
+      if ==(haskey(rule, "field"), true)
+        if ===(typeof(rule["field"]), String)
+          if ===(findfirst(x->x==rule["field"], fields), nothing)
+            push!(fields, rule["field"])
+          end
         end
       end
     end
   end
+
   # scan datasource ETL pipeline for metrics
   datasource["metadata"]["etl"]::Array
   for op in datasource["metadata"]["etl"]
