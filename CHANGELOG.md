@@ -1,3 +1,7 @@
+### 4.11.0
+
+* add etl! method that excludes metrics calculations
+
 ### 4.10.0
 
 * update get_metadata interface to make scraper_definition an optional keyword parameter

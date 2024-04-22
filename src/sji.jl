@@ -497,7 +497,7 @@ function etl!(
   fields::Array,
   metrics::Dict;
   interval::OHLCInterval=OHLCInterval(1, "m"),
-  prune::Bool=true
+  prune::Bool=true,
 )
   numthreads = Threads.nthreads()
   if ==(haskey(datasource["metadata"], "etl"), true)
@@ -594,6 +594,54 @@ function etl!(
             data[i, op["name"]] = calc_metric(op["name"], op["parameters"], d)
           end
         end
+      end
+    end
+  end
+  GC.gc()
+  return data
+end
+
+function etl!(
+  data::DataFrame,
+  datasource::Dict,
+  fields::Array;
+  interval::OHLCInterval=OHLCInterval(1, "m")
+)
+  numthreads = Threads.nthreads()
+  if ==(haskey(datasource["metadata"], "etl"), true)
+
+    # in non-realtime cases, check to see if the given interval differs from the datasource interval;
+    # if so, convert to the given interval before proceeding.
+    # realtime is excluded because it will get handled in the "ohlc" operation below.
+    if !=(datasource["interval"], "realtime") && !=(datasource["interval"], [interval.interval, interval.unit])
+      data = convert_ohlc_interval(
+        data,
+        datasource["timestamp_field"],
+        fields,
+        interval,
+      )
+    end
+
+    for op in datasource["metadata"]["etl"]
+      # convert realtime data to OHLC
+      if ==(op["operation"], "ohlc")
+        # calculate chunk intervals
+        chunks = Iterators.partition(data, floor(Int, nrow(data) / numthreads))
+        # convert using interval per thread
+        tasks = map(chunks) do chunk
+          Threads.@spawn convert_to_ohlc(
+            chunk,
+            op["parameters"]["time_field"],
+            op["parameters"]["data_field"],
+            Dict(),  # empty dict since this method excludes metrics
+            interval
+          )
+        end
+        data = fetch.(tasks)
+        # reduce Vector{DataFrame} to DataFrame
+        data = reduce(vcat, filter(x -> x !== nothing, data))
+        # make sure async processing didn't return incorrect ordering
+        sort!(data, datasource["timestamp_field"])
       end
     end
   end
