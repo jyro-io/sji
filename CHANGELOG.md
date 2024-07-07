@@ -1,3 +1,7 @@
+### 4.12.0
+
+* add GreatValueMath.jl to this package to make it easier to deprecate
+
 ### 4.11.0
 
 * add etl! method that excludes metrics calculations

@@ -11,6 +11,14 @@ using DataFrames
 using TimeZones
 using Base.Threads
 
+# this is temporary while I deprecate usage of these functions
+include("GreatValueMath.jl")
+using .GreatValueMath
+export GreatValueMath.min_max_feature_scale_normalization
+export GreatValueMath.normalize
+export GreatValueMath.theil_sen
+export GreatValueMath.linear_least_squares
+
 @with_kw struct Socrates
   #=
   Construct an authenticated Socrates client
