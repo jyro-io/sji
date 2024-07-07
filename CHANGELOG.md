@@ -1,3 +1,8 @@
+### 4.12.1
+
+* fix precompilation problem...
+* add register.sh convenience script
+
 ### 4.12.0
 
 * add GreatValueMath.jl to this package to make it easier to deprecate
