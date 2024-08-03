@@ -1,3 +1,8 @@
+### 4.13.0
+
+* add threading flag option to etl!(),
+  since this seems to cause problems with nested tasks elsewhere
+
 ### 4.12.1
 
 * fix precompilation problem...
