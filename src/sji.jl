@@ -74,21 +74,24 @@ struct OHLCInterval
   unit::String
 end
 
-function get_predictive_model(c::Socrates, datasource::String, definition::String)::SocratesResponse
+function get_model(c::Socrates, name::String, datasource::String, type::String)::SocratesResponse
   #=
-  Get a trained predictive model for a (datasource, pattern) pair from Archimedes
+  Get a model
 
   positional arguments:
     c <Socrates> client type
+    name <String> model name
     datasource <String> datasource name
-    definition <String> scraper definition name
+    type <String> model type ["mlp"]
   =#
 
-  url = c.protocol*"://"*c.host*"/archimedes/model"
+  if ==("mlp", type)
+    url = c.protocol*"://"*c.host*"/archimedes/mlp"
+  end
   params = Dict{String,String}(
     "operation"=>"get",
     "datasource"=>datasource,
-    "definition"=>definition
+    "name"=>name
   )
   r = HTTP.post(
     url,
@@ -996,5 +999,6 @@ export slice_dataframe_by_time_interval
 export convert_ohlc_interval
 export convert_realtime_to_ohlc
 export get_longest_metric_period
+export get_model
 
 end # module

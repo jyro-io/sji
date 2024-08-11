@@ -1,3 +1,7 @@
+### 4.14.0
+
+* get_predictive_model -> get_model
+
 ### 4.13.0
 
 * add threading flag option to etl!(),
