@@ -765,52 +765,31 @@ function convert_to_ohlc(
   metrics::Dict,
   destination::OHLCInterval=OHLCInterval(1, "m")
 )
-  converted = nothing
-  base_interval = get_ohlc_interval(destination)
-  i = 1
-  while true
-    slice = false
-    interval = base_interval
-    last_time = data[end, time_field]
-    # this while loop accounts for gaps in the underlying data
-    while ==(Bool, typeof(slice))
-      slice = slice_dataframe_by_time_interval(
-        data, 
-        time_field,
-        data[i, time_field],
-        data[i, time_field] + interval
-      )
-
-      interval += base_interval
-      if <(last_time, data[i, time_field] + interval)
-        return converted
-      end
-    end
-
-    row = Dict()
-    row[time_field] = slice[end, time_field]
-    row["graph"] = Float64(Dates.datetime2epochms(row[time_field]))  # all datasets will have a graph field derived from a DateTime field
-    row["open"] = slice[begin, data_field]
-    row["high"] = max(slice[:, data_field]...)
-    row["low"] = min(slice[:, data_field]...)
-    row["close"] = slice[end, data_field]
-    if ⊆(["volume"], names(data))
-      row["volume"] = sum(slice[:, "volume"])
-    end
-    for metric ∈ keys(metrics)
-      row[metric] = 0.0
-    end
-
-    if ==(nothing, converted)
-      converted = DataFrame(row)
-    end
-    push!(converted, row)
-
-    i += nrow(slice)
-    if <(nrow(data), i)
-      return converted
-    end
+  time_field = Symbol(time_field)
+  data_field = Symbol(data_field)
+  interval_duration = get_ohlc_interval(destination)
+  data.timegroup = floor.(data[:, time_field], interval_duration)
+  if ⊆(["volume"], fields)
+    grouped = combine(groupby(data, :timegroup),
+      data_field => first => :open,
+      data_field => maximum => :high,
+      data_field => minimum => :low,
+      data_field => last => :close,
+      :volume => sum => :volume,
+    )
+  else
+    grouped = combine(groupby(data, :timegroup),
+      data_field => first => :open,
+      data_field => maximum => :high,
+      data_field => minimum => :low,
+      data_field => last => :close,
+    )
   end
+
+  sort!(grouped, :timegroup)
+  rename!(grouped, :timegroup => time_field)
+
+  return grouped
 end
 
 function make_row(time_field::String, timestamp_format::String, fields::Vector, record)

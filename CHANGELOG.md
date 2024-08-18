@@ -1,3 +1,7 @@
+### 4.14.2
+
+* optimize convert_to_ohlc
+
 ### 4.14.1
 
 * optimize convert_ohlc_interval
