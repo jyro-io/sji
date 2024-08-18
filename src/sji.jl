@@ -509,7 +509,6 @@ function etl!(
   metrics::Dict;
   interval::OHLCInterval=OHLCInterval(1, "m"),
   prune::Bool=true,
-  threads::Bool=true,
 )
   if ==(haskey(datasource["metadata"], "etl"), true)
 
@@ -528,61 +527,23 @@ function etl!(
     for op in datasource["metadata"]["etl"]
       # convert realtime data to OHLC
       if ==(op["operation"], "ohlc")
-        if threads
-          # calculate chunk intervals
-          chunks = Iterators.partition(data, floor(Int, nrow(data) / Threads.nthreads()))
-          # convert using interval per thread
-          tasks = map(chunks) do chunk
-            Threads.@spawn convert_to_ohlc(
-              chunk,
-              op["parameters"]["time_field"],
-              op["parameters"]["data_field"],
-              metrics,
-              interval
-            )
-          end
-          data = fetch.(tasks)
-          # reduce Vector{DataFrame} to DataFrame
-          data = reduce(vcat, filter(x -> x !== nothing, data))
-          # make sure async processing didn't return incorrect ordering
-          sort!(data, datasource["timestamp_field"])
-        else
-          data = convert_to_ohlc(
-            data,
-            op["parameters"]["time_field"],
-            op["parameters"]["data_field"],
-            metrics,
-            interval
-          )
-        end
+        data = convert_to_ohlc(
+          data,
+          op["parameters"]["time_field"],
+          op["parameters"]["data_field"],
+          metrics,
+          interval
+        )
       # calculate metrics
       elseif ==(op["operation"], "metric")
         if ==(op["name"], "sma")
-          if threads
-            # convert using period per thread
-            tasks = map(op["parameters"]["periods"]) do period
-              Threads.@spawn simple_moving_average!(
-                data,
-                period,
-                op["parameters"]["data_field"],
-                op["parameters"]["time_field"],
-              )
-            end
-            # only columns are returned
-            data = fetch.(tasks)
-            # reduce Vector{DataFrame} to DataFrame
-            data = reduce(vcat, filter(x -> x !== nothing, data))
-            # make sure async processing didn't return incorrect ordering
-            sort!(data, datasource["timestamp_field"])
-          else
-            for period in op["parameters"]["periods"]
-              data = simple_moving_average!(
-                data,
-                period,
-                op["parameters"]["data_field"],
-                op["parameters"]["time_field"],
-              )
-            end
+          for period in op["parameters"]["periods"]
+            data = simple_moving_average!(
+              data,
+              period,
+              op["parameters"]["data_field"],
+              op["parameters"]["time_field"],
+            )
           end
 
           if prune
@@ -638,7 +599,6 @@ function etl!(
   datasource::Dict,
   fields::Array;
   interval::OHLCInterval=OHLCInterval(1, "m"),
-  threads::Bool=true,
 )
   if ==(haskey(datasource["metadata"], "etl"), true)
 
@@ -657,33 +617,13 @@ function etl!(
     for op in datasource["metadata"]["etl"]
       # convert realtime data to OHLC
       if ==(op["operation"], "ohlc")
-        if threads
-          # calculate chunk intervals
-          chunks = Iterators.partition(data, floor(Int, nrow(data) / Threads.nthreads()))
-          # convert using interval per thread
-          tasks = map(chunks) do chunk
-            Threads.@spawn convert_to_ohlc(
-              chunk,
-              op["parameters"]["time_field"],
-              op["parameters"]["data_field"],
-              Dict(),  # empty dict since this method excludes metrics
-              interval
-            )
-          end
-          data = fetch.(tasks)
-          # reduce Vector{DataFrame} to DataFrame
-          data = reduce(vcat, filter(x -> x !== nothing, data))
-          # make sure async processing didn't return incorrect ordering
-          sort!(data, datasource["timestamp_field"])
-        else
-          data = convert_to_ohlc(
-            data,
-            op["parameters"]["time_field"],
-            op["parameters"]["data_field"],
-            Dict(),  # empty dict since this method excludes metrics
-            interval
-          )
-        end
+        data = convert_to_ohlc(
+          data,
+          op["parameters"]["time_field"],
+          op["parameters"]["data_field"],
+          Dict(),  # empty dict since this method excludes metrics
+          interval
+        )
       end
     end
   end
@@ -788,6 +728,10 @@ function convert_to_ohlc(
 
   sort!(grouped, :timegroup)
   rename!(grouped, :timegroup => time_field)
+
+  for metric ∈ keys(metrics)
+    grouped[!, metric] .= 0.0
+  end
 
   return grouped
 end

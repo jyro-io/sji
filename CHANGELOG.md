@@ -1,3 +1,8 @@
+### 4.15.0
+
+* remove threading option in etl since the underlying functions are optimized
+* fix metrics in convert_to_ohlc
+
 ### 4.14.2
 
 * optimize convert_to_ohlc
