@@ -1,3 +1,7 @@
+### 4.14.1
+
+* optimize convert_ohlc_interval
+
 ### 4.14.0
 
 * get_predictive_model -> get_model

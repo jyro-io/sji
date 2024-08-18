@@ -99,7 +99,7 @@ function get_model(c::Socrates, name::String, datasource::String, type::String):
     JSON.json(params),
     require_ssl_verification = c.verify,
   )
-  response = JSON.parse(String(r.body))
+  response = String(r.body)
   if r.status == 200
     return SocratesResponse(true, response::Dict)
   else
@@ -732,41 +732,30 @@ function convert_ohlc_interval(
   fields::Array,
   destination::OHLCInterval
 )
-  converted = empty(data)
-  base_interval = get_ohlc_interval(destination)
-  i = 1
-  while true
-    slice = false
-    interval = base_interval
-    last_time = data[end, time_field]
-    # this while loop accounts for gaps in the underlying data
-    while ==(Bool, typeof(slice))
-      slice = slice_dataframe_by_time_interval(
-        data, 
-        time_field,
-        data[i, time_field], 
-        data[i, time_field] + interval
-      )
-      interval += base_interval
-      if <(last_time, data[i, time_field] + interval)
-        return converted
-      end
-    end
-    row = slice[begin, :]
-    row[time_field] = slice[begin, time_field]
-    row["open"] = slice[begin, :open]
-    row["high"] = max(slice[:, :high]...)
-    row["low"] = min(slice[:, :low]...)
-    row["close"] = slice[end, :close]
-    if ⊆(["volume"], fields)
-      row["volume"] = sum(slice[:, "volume"])
-    end
-    push!(converted, row)
-    i += nrow(slice)
-    if <=(nrow(data), i)
-      return converted
-    end
+  time_field = Symbol(time_field)
+  interval_duration = get_ohlc_interval(destination)
+  data.timegroup = floor.(data[:, time_field], interval_duration)
+  if ⊆(["volume"], fields)
+    grouped = combine(groupby(data, :timegroup),
+      :open => first => :open,
+      :high => maximum => :high,
+      :low => minimum => :low,
+      :close => last => :close,
+      :volume => sum => :volume,
+    )
+  else
+    grouped = combine(groupby(data, :timegroup),
+      :open => first => :open,
+      :high => maximum => :high,
+      :low => minimum => :low,
+      :close => last => :close,
+    )
   end
+
+  sort!(grouped, :timegroup)
+  rename!(grouped, :timegroup => time_field)
+
+  return grouped
 end
 
 function convert_to_ohlc(
