@@ -1,3 +1,7 @@
+### 4.16.0
+
+* remove model management functions
+
 ### 4.15.0
 
 * remove threading option in etl since the underlying functions are optimized

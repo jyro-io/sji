@@ -74,78 +74,6 @@ struct OHLCInterval
   unit::String
 end
 
-function get_model(c::Socrates, name::String, datasource::String, type::String)::SocratesResponse
-  #=
-  Get a model
-
-  positional arguments:
-    c <Socrates> client type
-    name <String> model name
-    datasource <String> datasource name
-    type <String> model type ["mlp"]
-  =#
-
-  if ==("mlp", type)
-    url = c.protocol*"://"*c.host*"/archimedes/mlp"
-  end
-  params = Dict{String,String}(
-    "operation"=>"get",
-    "datasource"=>datasource,
-    "name"=>name
-  )
-  r = HTTP.post(
-    url,
-    c.headers,
-    JSON.json(params),
-    require_ssl_verification = c.verify,
-  )
-  response = String(r.body)
-  if r.status == 200
-    return SocratesResponse(true, response::Dict)
-  else
-    return SocratesResponse(false, response::Dict)
-  end
-end
-
-function update_predictive_model(c::Socrates, datasource::String, definition::String, model::String)::SocratesResponse
-  #=
-  add/update predictive model
-
-  positional arguments:
-    c <Socrates> client type
-    datasource <String> datasource name
-    definition <String> scraper definition name
-    model <String> model -> BSON -> string
-  =#
-
-  # check for existing model
-  if get_predictive_model(c, datasource, definition).status
-    operation = "update"
-  else
-    operation = "add"
-  end
-
-  url = c.protocol*"://"*c.host*"/archimedes/model"
-  params = Dict{String,String}(
-    "operation"=>operation,
-    "datasource"=>datasource,
-    "definition"=>definition,
-    "model"=>model
-  )
-  r = HTTP.post(
-    url,
-    c.headers,
-    JSON.json(params),
-    require_ssl_verification = c.verify,
-  )
-  response = JSON.parse(String(r.body))
-  if r.status == 200
-    return SocratesResponse(true, response::Dict)
-  else
-    return SocratesResponse(false, response::Dict)
-  end
-end
-
 function push_raw_data(c::Socrates, name::String, records::Array)::SocratesResponse
   #=
   Push raw data to Socrates
@@ -911,6 +839,5 @@ export slice_dataframe_by_time_interval
 export convert_ohlc_interval
 export convert_realtime_to_ohlc
 export get_longest_metric_period
-export get_model
 
 end # module
