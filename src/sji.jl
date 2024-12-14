@@ -829,24 +829,21 @@ function exponential_moving_average!(
   pstart = nrow(data)          # Start from the most recent time
   prev_ema = 0.0               # To store the previous EMA value
 
-  while <=(1, pstart)
-    slice = data[pstart - period:pstart, time_field]
-    if !=(false, slice)
-      if pstart == nrow(data)
-        # Initialize EMA with the first available SMA
-        prev_ema = sum(slice[begin:end, data_field]) / nrow(slice)
-        data[pstart, pf] = prev_ema
-      else
-        # Calculate EMA using the previous EMA
-        data_value = data[pstart, data_field]
-        ema = α * data_value + (1 - α) * prev_ema
-        data[pstart, pf] = ema
-        prev_ema = ema
-      end
-      pstart -= 1  # Decrement current period start index
+  while <=(1, pstart-period)
+    slice = data[pstart-period:pstart, time_field]
+    @info slice
+    if pstart == nrow(data)
+      # Initialize EMA with the first available SMA
+      prev_ema = sum(slice[begin:end, data_field]) / nrow(slice)
+      data[pstart, pf] = prev_ema
     else
-      break
+      # Calculate EMA using the previous EMA
+      data_value = data[pstart, data_field]
+      ema = α * data_value + (1 - α) * prev_ema
+      data[pstart, pf] = ema
+      prev_ema = ema
     end
+    pstart -= 1  # Decrement current period start index
   end
 
   return data
