@@ -18,6 +18,7 @@ using Mongoc
 using DataFrames
 using TimeZones
 using Base.Threads
+using Format
 
 @with_kw struct Socrates
   #=
@@ -464,7 +465,7 @@ function etl!(
         )
       # calculate metrics
       elseif ==(op["operation"], "metric")
-        if ==(op["name"], "sma")
+        if op["name"] ∈ ["sma", "ema"]
           for period in op["parameters"]["periods"]
             data = simple_moving_average!(
               data,
@@ -480,7 +481,7 @@ function etl!(
             indexes = []
             for (i, period) ∈ enumerate(periods)
               remove = true
-              pf = "sma_"*string(period)  # period field
+              pf = format("{1}_{2}", op["name"], period)  # period field
               for row ∈ eachrow(data)
                 if !=(0.0, row[pf])
                   remove = false
@@ -497,7 +498,7 @@ function etl!(
             indexes = []
             for (i, row) ∈ enumerate(eachrow(data))
               for period ∈ periods
-                pf = "sma_"*string(period)  # period field
+                pf = format("{1}_{2}", op["name"], period)  # period field
                 if ==(0.0, row[pf])
                   append!(indexes, i)
                   break
@@ -793,6 +794,55 @@ function simple_moving_average!(
   end
   return data
 end
+
+# TODO: generalize to arbitrary intervals,
+#       currently only days are supported.
+function exponential_moving_average!(
+  data::AbstractDataFrame,
+  period::Int64,
+  data_field::String,
+  time_field::String,
+)
+  pf = "ema_" * string(period)  # period field
+  α = 2 / (period + 1)          # Smoothing factor for EMA
+
+  # Check for metric in DataFrame and create
+  if !hasproperty(data, pf)
+    data[!, pf] = fill(0.0, nrow(data))
+  end
+
+  # Calculate EMA
+  pstart = nrow(data)          # Start from the most recent time
+  prev_ema = 0.0               # To store the previous EMA value
+
+  while <=(1, pstart)
+    slice = slice_dataframe_by_time_interval(
+      data,
+      time_field,
+      data[pstart, time_field] - Dates.Day(period),
+      data[pstart, time_field]
+    )
+    if !=(false, slice)
+      if pstart == nrow(data)
+        # Initialize EMA with the first available SMA
+        prev_ema = sum(slice[begin:end, data_field]) / nrow(slice)
+        data[pstart, pf] = prev_ema
+      else
+        # Calculate EMA using the previous EMA
+        data_value = data[pstart, data_field]
+        ema = α * data_value + (1 - α) * prev_ema
+        data[pstart, pf] = ema
+        prev_ema = ema
+      end
+      pstart -= 1  # Decrement current period start index
+    else
+      break
+    end
+  end
+
+  return data
+end
+
 
 # map string input to algorithm call for DataFrameRow inputs
 # TODO: this can probably be done more elegantly

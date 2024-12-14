@@ -1,11 +1,12 @@
 name = "sji"
 uuid = "75ad0310-f313-421a-acc3-e43e28b97d53"
 authors = ["rorylinehan@protonmail.com <rorylinehan@protonmail.com> and contributors"]
-version = "4.16.0"
+version = "4.17.0"
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Format = "1fa38f19-a742-5d3f-a2b9-30dd87b9d5f8"
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 Mongoc = "4fe8b98c-fc19-5c23-8ec2-168ff83495f2"
@@ -14,6 +15,7 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 TimeZones = "f269a46b-ccf7-5d73-abea-4c690281aa53"
 
 [compat]
+Format = "1.3.7"
 julia = "1"
 
 [extras]
