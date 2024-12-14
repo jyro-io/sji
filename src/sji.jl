@@ -817,7 +817,7 @@ function exponential_moving_average!(
   data_field::String,
   time_field::String,
 )
-  pf = "ema_" * string(period)  # period field
+  pf = format("ema_{1}", period)  # period field
   α = 2 / (period + 1)          # Smoothing factor for EMA
 
   # Check for metric in DataFrame and create
@@ -830,12 +830,7 @@ function exponential_moving_average!(
   prev_ema = 0.0               # To store the previous EMA value
 
   while <=(1, pstart)
-    slice = slice_dataframe_by_time_interval(
-      data,
-      time_field,
-      data[pstart, time_field] - Dates.Day(period),
-      data[pstart, time_field]
-    )
+    slice = data[pstart - period:pstart, time_field]
     if !=(false, slice)
       if pstart == nrow(data)
         # Initialize EMA with the first available SMA
