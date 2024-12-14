@@ -1,3 +1,7 @@
+### 4.17.0
+
+* add EMA metric
+
 ### 4.16.0
 
 * remove model management functions
