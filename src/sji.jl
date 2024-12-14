@@ -467,13 +467,24 @@ function etl!(
       # calculate metrics
       elseif ==(op["operation"], "metric")
         if op["name"] ∈ ["sma", "ema"]
-          for period in op["parameters"]["periods"]
-            data = simple_moving_average!(
-              data,
-              period,
-              op["parameters"]["data_field"],
-              op["parameters"]["time_field"],
-            )
+          if ==("sma", op["name"])
+            for period in op["parameters"]["periods"]
+              data = simple_moving_average!(
+                data,
+                period,
+                op["parameters"]["data_field"],
+                op["parameters"]["time_field"],
+              )
+            end
+          elseif ==("ema", op["name"])
+            for period in op["parameters"]["periods"]
+              data = exponential_moving_average!(
+                data,
+                period,
+                op["parameters"]["data_field"],
+                op["parameters"]["time_field"],
+              )
+            end
           end
 
           if prune
