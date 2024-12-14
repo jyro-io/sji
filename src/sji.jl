@@ -747,7 +747,7 @@ end
 # in order to ensure queries get enough data
 # to calculate the metric correctly
 function get_longest_metric_period(datasource::Dict)::Int64
-  metric_list = ["sma"]
+  metric_list = ["sma", "ema"]
   longest = 0
   for op in datasource["metadata"]["etl"]
     if ==("metric", op["operation"])
