@@ -482,7 +482,6 @@ function etl!(
                 data,
                 period,
                 op["parameters"]["data_field"],
-                op["parameters"]["time_field"],
               )
             end
           end
@@ -815,7 +814,6 @@ function exponential_moving_average!(
   data::AbstractDataFrame,
   period::Int64,
   data_field::String,
-  time_field::String,
 )
   pf = format("ema_{1}", period)  # period field
   α = 2 / (period + 1)          # Smoothing factor for EMA
