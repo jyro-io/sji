@@ -674,13 +674,14 @@ function convert_to_ohlc(
   for metric ∈ keys(metrics)
     grouped[!, metric] .= 0.0
   end
+  grouped[!, "graph"] .= 0.0
 
   return grouped
 end
 
 function make_row(time_field::String, timestamp_format::String, fields::Vector, record)
   #=
-  Create a row formatted in a standardized way for Socrates applications
+  Create a row formatted in a standardized way
 
   positional arguments:
     time_field <String> timestamp field name
