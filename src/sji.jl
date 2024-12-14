@@ -460,6 +460,7 @@ function etl!(
           data,
           op["parameters"]["time_field"],
           op["parameters"]["data_field"],
+          fields,
           metrics,
           interval
         )
@@ -631,6 +632,7 @@ function convert_to_ohlc(
   data::AbstractDataFrame,
   time_field::String,
   data_field::String,
+  fields::Array,
   metrics::Dict,
   destination::OHLCInterval=OHLCInterval(1, "m")
 )
