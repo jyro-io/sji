@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-julia -e 'using LocalRegistry; register();'
+julia -e 'import Pkg; Pkg.add("LocalRegistry"); using LocalRegistry; register();'
