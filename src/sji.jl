@@ -830,11 +830,10 @@ function exponential_moving_average!(
   prev_ema = 0.0               # To store the previous EMA value
 
   while <=(1, pstart-period)
-    slice = data[pstart-period:pstart, time_field]
-    @info slice
+    slice = data[pstart-period:pstart, :]
     if pstart == nrow(data)
       # Initialize EMA with the first available SMA
-      prev_ema = sum(slice[begin:end, data_field]) / nrow(slice)
+      prev_ema = sum(data[begin:end, data_field]) / nrow(slice)
       data[pstart, pf] = prev_ema
     else
       # Calculate EMA using the previous EMA
