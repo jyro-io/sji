@@ -18,6 +18,7 @@ using Mongoc
 using DataFrames
 using TimeZones
 using Base.Threads
+using Format
 
 @with_kw struct Socrates
   #=
@@ -459,19 +460,30 @@ function etl!(
           data,
           op["parameters"]["time_field"],
           op["parameters"]["data_field"],
+          fields,
           metrics,
           interval
         )
       # calculate metrics
       elseif ==(op["operation"], "metric")
-        if ==(op["name"], "sma")
-          for period in op["parameters"]["periods"]
-            data = simple_moving_average!(
-              data,
-              period,
-              op["parameters"]["data_field"],
-              op["parameters"]["time_field"],
-            )
+        if op["name"] ∈ ["sma", "ema"]
+          if ==("sma", op["name"])
+            for period in op["parameters"]["periods"]
+              data = simple_moving_average!(
+                data,
+                period,
+                op["parameters"]["data_field"],
+                op["parameters"]["time_field"],
+              )
+            end
+          elseif ==("ema", op["name"])
+            for period in op["parameters"]["periods"]
+              data = exponential_moving_average!(
+                data,
+                period,
+                op["parameters"]["data_field"],
+              )
+            end
           end
 
           if prune
@@ -480,7 +492,7 @@ function etl!(
             indexes = []
             for (i, period) ∈ enumerate(periods)
               remove = true
-              pf = "sma_"*string(period)  # period field
+              pf = format("{1}_{2}", op["name"], period)  # period field
               for row ∈ eachrow(data)
                 if !=(0.0, row[pf])
                   remove = false
@@ -497,7 +509,7 @@ function etl!(
             indexes = []
             for (i, row) ∈ enumerate(eachrow(data))
               for period ∈ periods
-                pf = "sma_"*string(period)  # period field
+                pf = format("{1}_{2}", op["name"], period)  # period field
                 if ==(0.0, row[pf])
                   append!(indexes, i)
                   break
@@ -630,6 +642,7 @@ function convert_to_ohlc(
   data::AbstractDataFrame,
   time_field::String,
   data_field::String,
+  fields::Array,
   metrics::Dict,
   destination::OHLCInterval=OHLCInterval(1, "m")
 )
@@ -660,13 +673,14 @@ function convert_to_ohlc(
   for metric ∈ keys(metrics)
     grouped[!, metric] .= 0.0
   end
+  grouped[!, "graph"] .= 0.0
 
   return grouped
 end
 
 function make_row(time_field::String, timestamp_format::String, fields::Vector, record)
   #=
-  Create a row formatted in a standardized way for Socrates applications
+  Create a row formatted in a standardized way
 
   positional arguments:
     time_field <String> timestamp field name
@@ -746,7 +760,7 @@ end
 # in order to ensure queries get enough data
 # to calculate the metric correctly
 function get_longest_metric_period(datasource::Dict)::Int64
-  metric_list = ["sma"]
+  metric_list = ["sma", "ema"]
   longest = 0
   for op in datasource["metadata"]["etl"]
     if ==("metric", op["operation"])
@@ -793,6 +807,45 @@ function simple_moving_average!(
   end
   return data
 end
+
+# TODO: generalize to arbitrary intervals,
+#       currently only days are supported.
+function exponential_moving_average!(
+  data::AbstractDataFrame,
+  period::Int64,
+  data_field::String,
+)
+  pf = format("ema_{1}", period)  # period field
+  α = 2 / (period + 1)          # Smoothing factor for EMA
+
+  # Check for metric in DataFrame and create
+  if !hasproperty(data, pf)
+    data[!, pf] = fill(0.0, nrow(data))
+  end
+
+  # Calculate EMA
+  pstart = nrow(data)          # Start from the most recent time
+  prev_ema = 0.0               # To store the previous EMA value
+
+  while <=(1, pstart-period)
+    slice = data[pstart-period:pstart, :]
+    if pstart == nrow(data)
+      # Initialize EMA with the first available SMA
+      prev_ema = sum(data[begin:end, data_field]) / nrow(slice)
+      data[pstart, pf] = prev_ema
+    else
+      # Calculate EMA using the previous EMA
+      data_value = data[pstart, data_field]
+      ema = α * data_value + (1 - α) * prev_ema
+      data[pstart, pf] = ema
+      prev_ema = ema
+    end
+    pstart -= 1  # Decrement current period start index
+  end
+
+  return data
+end
+
 
 # map string input to algorithm call for DataFrameRow inputs
 # TODO: this can probably be done more elegantly
