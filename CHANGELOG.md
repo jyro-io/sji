@@ -1,3 +1,7 @@
+### 4.17.1
+
+* add configurable timeout for client
+
 ### 4.17.0
 
 * add EMA metric

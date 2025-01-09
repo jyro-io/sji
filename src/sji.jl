@@ -24,13 +24,14 @@ using Format
   #=
   Construct an authenticated Socrates client
   keyword arguments:
-    protocol <string> HTTP/HTTPS
-    host <string> Socrates host
-    username <string> Socrates username
-    password <string> Socrates password
-    verify <bool> SSL verify
+    protocol <String> HTTP/HTTPS
+    host <String> Socrates host
+    username <String> Socrates username
+    password <zv> Socrates password
+    verify <Bool> SSL verify
     conf <SSLConfig> SSL configuration
     headers <Array> HTTP headers
+    timeout <Int64> HTTP timeout
   =#
 
   protocol::String = "https"
@@ -40,8 +41,9 @@ using Format
   verify::Bool = true
   headers::Array = ["Content-Type" => "application/json"]
   debug::Int32 = 1
+  timeout::Int64 = 5
 
-  function Socrates(protocol, host, username, password, verify, headers, debug)
+  function Socrates(protocol, host, username, password, verify, headers, debug, timeout)
     url = protocol*"://"*host*"/auth"
     params = Dict{String,String}(
       "username"=>username,
@@ -52,8 +54,7 @@ using Format
       headers,
       JSON.json(params),
       require_ssl_verification = verify,
-      readtimeout = 5,
-      retries = 1
+      readtimeout = timeout,
     )
     response = JSON.parse(String(r.body))::Dict
     if r.status == 200
@@ -61,7 +62,7 @@ using Format
     else
       error("failed to get token: return code: "*string(r.status)*", expected 200: response: "*response)
     end
-    new(protocol, host, username, password, verify, headers, debug)
+    new(protocol, host, username, password, verify, headers, debug, timeout)
   end
 end
 
