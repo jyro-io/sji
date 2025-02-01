@@ -1,3 +1,7 @@
+### 4.18.0
+
+* switch metric calculations to MarketTechnicals.jl
+
 ### 4.17.1
 
 * add configurable timeout for client
