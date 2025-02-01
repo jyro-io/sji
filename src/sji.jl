@@ -635,7 +635,7 @@ function convert_ohlc_interval(
   end
 
   sort!(grouped, :timegroup)
-  rename!(grouped, :timegroup => time_field)
+  DataFrames.rename!(grouped, :timegroup => time_field)
 
   return grouped
 end
@@ -670,7 +670,7 @@ function convert_to_ohlc(
   end
 
   sort!(grouped, :timegroup)
-  rename!(grouped, :timegroup => time_field)
+  DataFrames.rename!(grouped, :timegroup => time_field)
 
   for metric ∈ keys(metrics)
     grouped[!, metric] .= 0.0
