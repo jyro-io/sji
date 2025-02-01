@@ -817,8 +817,13 @@ function exponential_moving_average!(
   period::Int64,
   data_field::String,
 )
-  data[!, format("ema_{1}", period)] = ema(data[:, data_field], period)
-  @debug "data[:, data_field]" data[:, data_field]
+  pf = "sma_"*string(period)  # period field
+  # check for metric in dataframe and create
+  if !hasproperty(data, pf)
+    data[!, pf] = fill(0.0, nrow(data))
+  end
+  data[!, pf] = ema(data[:, data_field], period)
+  @debug "data[:, pf]" data[:, pf]
   return data
 end
 
