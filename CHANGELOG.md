@@ -1,3 +1,9 @@
+### 4.18.0
+
+* switch metric calculations to MarketTechnicals.jl
+* remove useless tests
+* add unit test, finally
+
 ### 4.17.1
 
 * add configurable timeout for client

@@ -19,6 +19,7 @@ using DataFrames
 using TimeZones
 using Base.Threads
 using Format
+using MarketTechnicals
 
 @with_kw struct Socrates
   #=
@@ -634,7 +635,7 @@ function convert_ohlc_interval(
   end
 
   sort!(grouped, :timegroup)
-  rename!(grouped, :timegroup => time_field)
+  DataFrames.rename!(grouped, :timegroup => time_field)
 
   return grouped
 end
@@ -669,7 +670,7 @@ function convert_to_ohlc(
   end
 
   sort!(grouped, :timegroup)
-  rename!(grouped, :timegroup => time_field)
+  DataFrames.rename!(grouped, :timegroup => time_field)
 
   for metric ∈ keys(metrics)
     grouped[!, metric] .= 0.0
@@ -815,35 +816,14 @@ function exponential_moving_average!(
   data::AbstractDataFrame,
   period::Int64,
   data_field::String,
-)
-  pf = format("ema_{1}", period)  # period field
-  α = 2 / (period + 1)          # Smoothing factor for EMA
-
-  # Check for metric in DataFrame and create
-  if !hasproperty(data, pf)
-    data[!, pf] = fill(0.0, nrow(data))
-  end
-
-  # Calculate EMA
-  pstart = nrow(data)          # Start from the most recent time
-  prev_ema = 0.0               # To store the previous EMA value
-
-  while <=(1, pstart-period)
-    slice = data[pstart-period:pstart, :]
-    if pstart == nrow(data)
-      # Initialize EMA with the first available SMA
-      prev_ema = sum(data[begin:end, data_field]) / nrow(slice)
-      data[pstart, pf] = prev_ema
-    else
-      # Calculate EMA using the previous EMA
-      data_value = data[pstart, data_field]
-      ema = α * data_value + (1 - α) * prev_ema
-      data[pstart, pf] = ema
-      prev_ema = ema
-    end
-    pstart -= 1  # Decrement current period start index
-  end
-
+)::AbstractDataFrame
+  # period field
+  pf = Symbol("ema_"*string(period))
+  # calculate EMA and convert to Vector
+  result = vec(ema(data[:, data_field], period))
+  # pad missing values with ema initial value
+  result = vcat(fill(result[1], period - 1), result)
+  insertcols!(data, pf => result)
   return data
 end
 
