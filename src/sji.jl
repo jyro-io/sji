@@ -341,7 +341,11 @@ function get_mongo_records(collection::Mongoc.Collection, filter::Mongoc.BSON, b
     if index == 1
       for field in fields
         # fast generic type detection
-        data[!, field] = Array{typeof(record[field]),1}()
+        type = typeof(record[field])
+        if ==(Int32, type)
+          type = Int64
+        end
+        data[!, field] = Array{type,1}()
       end
     end
     push!(data, record)

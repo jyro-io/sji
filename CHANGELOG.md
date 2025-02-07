@@ -1,3 +1,7 @@
+### 4.18.1
+
+* fix bug where Int32 is detected, but Int64 values get pushed later
+
 ### 4.18.0
 
 * switch metric calculations to MarketTechnicals.jl
