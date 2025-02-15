@@ -1,3 +1,7 @@
+### 4.18.2
+
+* update MarketTechnicals 0.6.0 -> 0.7.0
+
 ### 4.18.1
 
 * fix bug where Int32 is detected, but Int64 values get pushed later
